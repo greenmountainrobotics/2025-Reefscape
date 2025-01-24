@@ -16,6 +16,7 @@ package frc.robot.subsystems.drive;
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.swerve.jni.SwerveJNI.DriveState;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
@@ -23,13 +24,18 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
+
+import choreo.Choreo;
+import choreo.trajectory.Trajectory;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -43,21 +49,58 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.DeferredCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.constants.DriveConstants;
+import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.drive.imu.GyroIO;
+import frc.robot.subsystems.drive.module.Module;
+import frc.robot.subsystems.drive.module.ModuleIO;
+import frc.robot.util.FieldPoseUtils;
 import frc.robot.util.LocalADStarAK;
+
+import java.util.Arrays;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
+
+//My imports 
+
+import static frc.robot.constants.DriveConstants.TrackWidthX;
+import static frc.robot.constants.DriveConstants.TrackWidthY;
+import static frc.robot.constants.TunableConstants.KpTheta;
+import static frc.robot.constants.TunableConstants.KpTranslation;
+//import com.choreo.lib.Choreo;
+//import com.choreo.lib.ChoreoTrajectory;
+
+import frc.robot.constants.DriveConstants;
+import frc.robot.constants.FieldConstants;
+import frc.robot.constants.MyTrajectory;
+import frc.robot.constants.TunableConstants;
+import frc.robot.subsystems.leds.Leds;
+import frc.robot.util.MyAlliance;
+
+
+
 public class Drive extends SubsystemBase {
+  
   // TunerConstants doesn't include these constants, so they are declared locally
-  static final double ODOMETRY_FREQUENCY =
+  public static final double ODOMETRY_FREQUENCY =
       new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD() ? 250.0 : 100.0;
   public static final double DRIVE_BASE_RADIUS =
       Math.max(
@@ -105,7 +148,16 @@ public class Drive extends SubsystemBase {
       };
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
+      
 
+      private ChassisSpeeds chassisSpeeds = new ChassisSpeeds();
+
+      private final ProfiledPIDController translationController;
+      private final ProfiledPIDController thetaController;
+
+      private final Field2d smartDashboardField;
+
+      private DriveState driveState = DriveState.NONE;
   public Drive(
       GyroIO gyroIO,
       ModuleIO flModuleIO,
@@ -365,4 +417,312 @@ public class Drive extends SubsystemBase {
       new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)
     };
   }
+
+  //My new code!---------------------------------------------------
+
+  public ChassisSpeeds calculatePIDVelocity(Pose2d targetPose) {
+    return calculatePIDVelocity(targetPose, getPose(), 0, 0, 0);
+  }
+  
+
+  public ChassisSpeeds calculatePIDVelocity(
+      Pose2d targetPose, Pose2d currentPose, double xFF, double yFF, double thetaFF) {
+
+    double currentDistance = currentPose.getTranslation().getDistance(targetPose.getTranslation());
+    double translationVelocityScalar = translationController.calculate(currentDistance, 0.0);
+
+    double thetaVelocity =
+        thetaController.calculate(
+            currentPose.getRotation().getRadians(), targetPose.getRotation().getRadians());
+
+    var driveVelocity =
+        new Pose2d(
+                new Translation2d(),
+                currentPose.getTranslation().minus(targetPose.getTranslation()).getAngle())
+            .transformBy(new Transform2d(translationVelocityScalar, 0.0, new Rotation2d()))
+            .getTranslation();
+
+    return ChassisSpeeds.fromFieldRelativeSpeeds(
+        driveVelocity.getX() + xFF,
+        driveVelocity.getY() + yFF,
+        thetaVelocity + thetaFF,
+        currentPose.getRotation());
+  }
+
+  public double calculatePIDThetaVelocity(double targetThetaRad, double currentThetaRad) {
+    return thetaController.calculate(currentThetaRad, targetThetaRad);
+  }
+
+  public boolean poseAtSetpoint(Pose2d setpoint) {
+    return Math.abs(getPose().getTranslation().getDistance(setpoint.getTranslation()))
+            < DriveConstants.DriveTolerance
+        && Math.abs(getPose().getRotation().minus(setpoint.getRotation()).getRadians())
+            < DriveConstants.ThetaToleranceRad;
+  }
+
+  public double distanceFromPoint(Translation2d point) {
+    return getPose().getTranslation().getDistance(point);
+  }
+
+  public Command runToPose(Supplier<Pose2d> targetPoseSupplier, boolean stop) {
+    return new InstantCommand(() -> Leds.State.DrivingToPose = true)
+        .andThen(
+            new InstantCommand(
+                () -> thetaController.reset(getPose().getRotation().getRadians()), this))
+        .andThen(
+            new RunCommand(
+                () -> {
+                  var targetPose = targetPoseSupplier.get();
+                  Logger.recordOutput("Auto/TargetPose", targetPose);
+                  Logger.recordOutput("Auto/Trajectory", getPose(), targetPose);
+                  runVelocity(calculatePIDVelocity(targetPose));
+                },
+                this))
+        .until(() -> poseAtSetpoint(targetPoseSupplier.get()))
+        .finallyDo(
+            () -> {
+              if (stop) this.stop();
+            })
+        .finallyDo(() -> Leds.State.DrivingToPose = false);
+  }
+
+  public Command runToPose(
+      Supplier<Pose2d> targetPoseSupplier, boolean stop, double translationP, double thetaP) {
+    return new DeferredCommand(
+        () -> {
+          var oldTranslationP = translationController.getP();
+          var oldThetaP = thetaController.getP();
+          return new InstantCommand(
+                  () -> {
+                    translationController.setP(translationP);
+                    thetaController.setP(thetaP);
+                  })
+              .andThen(runToPose(targetPoseSupplier, stop))
+              .andThen(
+                  new InstantCommand(
+                      () -> {
+                        translationController.setP(oldTranslationP);
+                        thetaController.setP(oldThetaP);
+                      }));
+        },
+        Set.of(this));
+  }
+
+  public Command runToPose(Supplier<Pose2d> targetPoseSupplier) {
+    return runToPose(targetPoseSupplier, true);
+  }
+
+  public Command followPath(Trajectory trajectoryFile) {
+    Trajectory trajectory = Choreo.getTrajectory(trajectoryFile.fileName);
+
+    return new SequentialCommandGroup(
+        runToPose(() -> FieldPoseUtils.flipPoseIfRed(trajectory.getInitialPose()), false),
+        new InstantCommand(
+            () -> {
+              Logger.recordOutput(
+                  "Auto/TargetPose", FieldPoseUtils.flipPoseIfRed(trajectory.getFinalPose()));
+              Logger.recordOutput(
+                  "Auto/Trajectory",
+                  Arrays.stream(trajectory.getPoses())
+                      .map(FieldPoseUtils::flipPoseIfRed)
+                      .toArray(Pose2d[]::new));
+            }),
+        Choreo.choreoSwerveCommand(
+            trajectory,
+            this::getPose,
+            (pose2d, trajectoryState) ->
+                calculatePIDVelocity(
+                    trajectoryState.getPose(),
+                    pose2d,
+                    trajectoryState.velocityX,
+                    trajectoryState.velocityY,
+                    trajectoryState.angularVelocity),
+            this::runVelocity,
+            Alliance::isRed));
+  }
+
+
+  public enum DriveState {
+    NONE,
+    ALIGNING_TO_SPEAKER,
+    ALIGNING_TO_AMP
+  }
+
+  public Command alignToSpeaker() {
+    return new InstantCommand(() -> setState(DriveState.ALIGNING_TO_SPEAKER))
+        .andThen(
+            new DeferredCommand(
+                () -> {
+                  var angle =
+                      angleModulus(
+                          getPose()
+                              .getTranslation()
+                              .minus(
+                                  FieldPoseUtils.flipTranslationIfRed(
+                                      FieldConstants.SpeakerCloseSideCenter))
+                              .getAngle()
+                              .getRadians());
+
+                  var targetTranslation =
+                      FieldPoseUtils.flipTranslationIfRed(FieldConstants.SpeakerCloseSideCenter)
+                          .plus(
+                              new Translation2d(
+                                      SmartDashboard.getNumber(
+                                          "Shooting Distance M",
+                                          FieldConstants.SpeakerShootingDistance),
+                                      0)
+                                  .rotateBy(
+                                      Rotation2d.fromRadians(
+                                          Alliance.isRed()
+                                              ? angle > Math.PI * 5 / 6
+                                                  ? angle
+                                                  : angle < Math.PI * -5 / 6
+                                                      ? angle
+                                                      : angle < 0
+                                                          ? Math.PI * -5 / 6
+                                                          : Math.PI * 5 / 6
+                                              : Math.min(
+                                                  Math.max(angle, -Math.PI / 6), Math.PI / 6))));
+
+                  var targetPose =
+                      new Pose2d(
+                          targetTranslation.getX(),
+                          targetTranslation.getY(),
+                          FieldPoseUtils.flipTranslationIfRed(FieldConstants.SpeakerCloseSideCenter)
+                              .minus(targetTranslation)
+                              .getAngle()
+                              .minus(Rotation2d.fromRadians(Math.PI)));
+
+                  return runToPose(() -> targetPose);
+                },
+                Set.of(this)))
+        .finallyDo(() -> setState(DriveState.NONE));
+  }
+
+  public Command alignToNote(Translation2d noteTranslation) {
+    return new DeferredCommand(
+        () -> {
+          var targetTranslation =
+              Alliance.isRed()
+                  ? noteTranslation.plus(
+                      new Translation2d(
+                              DriveConstants.WidthWithBumpersX / 2
+                                  + FieldConstants.NoteDiameter / 2,
+                              0)
+                          .rotateBy(getPose().getTranslation().minus(noteTranslation).getAngle()))
+                  : noteTranslation.minus(
+                      new Translation2d(
+                              DriveConstants.WidthWithBumpersX / 2
+                                  + FieldConstants.NoteDiameter / 2,
+                              0)
+                          .rotateBy(getPose().getTranslation().minus(noteTranslation).getAngle()));
+
+          var targetPose =
+              new Pose2d(
+                  targetTranslation.getX(),
+                  targetTranslation.getY(),
+                  noteTranslation.minus(targetTranslation).getAngle());
+
+          var startingPose = getPose();
+
+          return runToPose(
+                  () ->
+                      new Pose2d(
+                          startingPose.getX(), startingPose.getY(), targetPose.getRotation()),
+                  false)
+              .until(
+                  () ->
+                      Math.abs(targetPose.getRotation().minus(getPose().getRotation()).getRadians())
+                          < Math.PI / 6)
+              .andThen(runToPose(() -> targetPose));
+        },
+        Set.of(this));
+  }
+
+  public Command alignToAmp() {
+    return new InstantCommand(() -> setState(DriveState.ALIGNING_TO_AMP))
+        .andThen(
+            runToPose(
+                () ->
+                    FieldPoseUtils.flipPoseIfRed(
+                        new Pose2d(
+                            FieldConstants.AmpCenter.minus(
+                                new Translation2d(DriveConstants.WidthWithBumpersX, 0)
+                                    .times(0.5)
+                                    .rotateBy(Rotation2d.fromDegrees(90))),
+                            FieldConstants.AmpRotation)),
+                true,
+                KpTranslation * 4,
+                KpTheta))
+        .finallyDo(() -> setState(DriveState.NONE));
+  }
+
+  public Command alignToFrontOfAmp() {
+    return new InstantCommand(() -> setState(DriveState.ALIGNING_TO_AMP))
+        .andThen(
+            runToPose(
+                () ->
+                    FieldPoseUtils.flipPoseIfRed(
+                        new Pose2d(
+                            FieldConstants.AmpCenter.minus(
+                                new Translation2d(DriveConstants.WidthWithBumpersX, 0)
+                                    .times(0.5)
+                                    .plus(
+                                        new Translation2d(
+                                            DriveConstants.WidthWithBumpersX * 2 / 3, 0))
+                                    .rotateBy(Rotation2d.fromDegrees(90))),
+                            FieldConstants.AmpRotation))))
+        .finallyDo(() -> setState(DriveState.NONE));
+  }
+
+  public void setState(DriveState state) {
+    driveState = state;
+  }
+
+  private double characterizationStartingGyro = 0.0;
+  private double characterizationAccumRotation = 0.0;
+  private double characterizationStartAvgPosition = 0.0;
+
+  public Command wheelRadiusCharacterization() {
+    return new DeferredCommand(
+        () -> {
+          characterizationStartAvgPosition =
+              Arrays.stream(modules)
+                      .map(Module::getPositionRad)
+                      .map(Math::abs)
+                      .reduce(0.0, Double::sum)
+                  / 4;
+          characterizationAccumRotation = 0.0;
+          characterizationStartingGyro = gyroInputs.yawPosition.getRadians();
+
+          return new RunCommand(
+              () -> {
+                runVelocity(new ChassisSpeeds(0, 0, 0.5));
+
+                characterizationAccumRotation +=
+                    angleModulus(
+                        gyroInputs.yawPosition.getRadians() - characterizationStartingGyro);
+
+                var characterizationAvgPosition =
+                    Arrays.stream(modules)
+                                .map(Module::getPositionRad)
+                                .map(Math::abs)
+                                .reduce(0.0, Double::sum)
+                            / 4
+                        - characterizationStartAvgPosition;
+
+                Logger.recordOutput(
+                    "Drive/AvgWheelRadius",
+                    characterizationAccumRotation * TrackWidthX / 2 / characterizationAvgPosition);
+                Logger.recordOutput("Drive/AvgSwervePosition", characterizationAvgPosition);
+                Logger.recordOutput(
+                    "Drive/CharacterizationAccumRotation", characterizationAccumRotation);
+                Logger.recordOutput("Drive/StartSwervePosition", characterizationStartAvgPosition);
+
+                characterizationStartingGyro = gyroInputs.yawPosition.getRadians();
+              },
+              this);
+        },
+        Set.of(this));
+      }
 }
