@@ -62,7 +62,6 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.FieldConstants;
-import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.imu.GyroIO;
 import frc.robot.subsystems.drive.module.Module;
 import frc.robot.subsystems.drive.module.ModuleIO;
@@ -73,6 +72,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -92,6 +92,7 @@ import frc.robot.constants.DriveConstants;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.MyTrajectory;
 import frc.robot.constants.TunableConstants;
+import frc.robot.constants.TunerConstants;
 import frc.robot.subsystems.leds.Leds;
 import frc.robot.util.MyAlliance;
 
@@ -398,6 +399,13 @@ public class Drive extends SubsystemBase {
         visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
   }
 
+  public interface VisionMeasurementConsumer {
+    void accept(
+        Pose2d visionPose,
+        double timestamp,
+        Function<DriveState, Matrix<N3, N1>> visionMeasurementStdDevs);
+  }
+
   /** Returns the maximum linear speed in meters per sec. */
   public double getMaxLinearSpeedMetersPerSec() {
     return TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
@@ -419,7 +427,7 @@ public class Drive extends SubsystemBase {
   }
 
   //My new code!---------------------------------------------------
-
+ 
   public ChassisSpeeds calculatePIDVelocity(Pose2d targetPose) {
     return calculatePIDVelocity(targetPose, getPose(), 0, 0, 0);
   }

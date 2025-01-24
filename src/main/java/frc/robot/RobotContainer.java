@@ -13,7 +13,10 @@
 
 package frc.robot;
 
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+
 import com.pathplanner.lib.auto.AutoBuilder;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -23,15 +26,21 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
-import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.drive.DriveU;
+import frc.robot.constants.Camera;
+import frc.robot.constants.TunerConstants;
+import frc.robot.subsystems.apriltagvision.AprilTagVision;
+import frc.robot.subsystems.apriltagvision.photonvision.PhotonVision;
+import frc.robot.subsystems.apriltagvision.photonvision.PhotonVisionIOReal;
+import frc.robot.subsystems.apriltagvision.photonvision.PhotonVisionIOReplay;
+import frc.robot.subsystems.apriltagvision.photonvision.PhotonVisionIOSim;
+import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.imu.GyroIO;
 import frc.robot.subsystems.drive.imu.GyroIOPigeon2;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.drive.module.ModuleIOSim;
 import frc.robot.subsystems.drive.module.ModuleIOTalonFX;
-
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.Config;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -41,7 +50,10 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  */
 public class RobotContainer {
   // Subsystems
-  private final DriveU drive;
+  public  Drive drive;
+  public  AprilTagVision aprilTagVision;
+  public  Elevator elevator; 
+
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -55,34 +67,57 @@ public class RobotContainer {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         drive =
-            new DriveU(
+            new Drive(
                 new GyroIOPigeon2(),
                 new ModuleIOTalonFX(TunerConstants.FrontLeft),
                 new ModuleIOTalonFX(TunerConstants.FrontRight),
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
+        aprilTagVision =
+            new AprilTagVision(
+                new PhotonVision(new PhotonVisionIOReal(Camera.BackCamera)),
+                new PhotonVision(new PhotonVisionIOReal(Camera.FrontRightCamera)),
+                new PhotonVision(new PhotonVisionIOReal(Camera.FrontLeftCamera)));
+        elevator = 
+            new Elevator<SlamElevatorGoal>() {};
         break;
 
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         drive =
-            new DriveU(
+            new Drive(
                 new GyroIO() {},
                 new ModuleIOSim(TunerConstants.FrontLeft),
                 new ModuleIOSim(TunerConstants.FrontRight),
                 new ModuleIOSim(TunerConstants.BackLeft),
                 new ModuleIOSim(TunerConstants.BackRight));
+
+
+        aprilTagVision =
+            new AprilTagVision(
+                new PhotonVision(new PhotonVisionIOSim(Camera.BackCamera, drive::getPose)),
+                new PhotonVision(new PhotonVisionIOSim(Camera.FrontRightCamera, drive::getPose)),
+                new PhotonVision(new PhotonVisionIOSim(Camera.FrontLeftCamera, drive::getPose)));
+
         break;
+
+       
 
       default:
         // Replayed robot, disable IO implementations
         drive =
-            new DriveU(
+            new Drive(
                 new GyroIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
+
+        aprilTagVision =
+            new AprilTagVision(
+                new PhotonVision(new PhotonVisionIOReplay(Camera.BackCamera)),
+                new PhotonVision(new PhotonVisionIOReplay(Camera.FrontRightCamera)),
+                new PhotonVision(new PhotonVisionIOReplay(Camera.FrontLeftCamera)));
         break;
     }
 

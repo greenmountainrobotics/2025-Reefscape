@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.LedConstants;
-import frc.robot.util.Alliance;
+import frc.robot.util.MyAlliance;
 
 public class Leds extends SubsystemBase {
   private final AddressableLED leds;
@@ -31,7 +31,7 @@ public class Leds extends SubsystemBase {
   }
 
   private void autoSetColors() {
-    Color allianceColor = Alliance.isRed() ? Color.kRed : Color.kBlue;
+    Color allianceColor = MyAlliance.isRed() ? Color.kRed : Color.kBlue;
 
     /*
     apriltags not connected -> yellow
