@@ -22,8 +22,6 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import frc.robot.subsystems.drive.ModuleIOInputsAutoLogged;
-
 import org.littletonrobotics.junction.Logger;
 
 public class Module {
@@ -110,6 +108,10 @@ public class Module {
   /** Returns the current drive position of the module in meters. */
   public double getPositionMeters() {
     return inputs.drivePositionRad * constants.WheelRadius;
+  }
+
+  public double getPositionRad() {
+    return inputs.drivePositionRad;
   }
 
   /** Returns the current drive velocity of the module in meters per second. */

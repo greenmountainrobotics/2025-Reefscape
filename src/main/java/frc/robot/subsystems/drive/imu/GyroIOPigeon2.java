@@ -26,7 +26,6 @@ import frc.robot.constants.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.PhoenixOdometryThread;
 import frc.robot.subsystems.drive.imu.GyroIO.GyroIOInputs;
-
 import java.util.Queue;
 
 /** IO implementation for Pigeon 2. */

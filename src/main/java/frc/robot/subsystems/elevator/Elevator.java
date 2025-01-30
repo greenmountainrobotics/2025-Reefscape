@@ -8,11 +8,9 @@
 package frc.robot.subsystems.elevator;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import frc.robot.subsystems.elevator.ElevatorIO;
 import edu.wpi.first.wpilibj.Timer;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-import org.littletonrobotics.frc2024.util.Alert;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -37,8 +35,8 @@ public abstract class Elevator<G extends Elevator.SlamElevatorGoal> {
   }
 
   private final ElevatorIO io;
-  protected final ElevatorIOInputsAutoLogged inputs =
-      new ElevatorIOInputsAutoLogged();
+  protected final GenericSlamElevatorIOInputsAutoLogged inputs =
+      new GenericSlamElevatorIOInputsAutoLogged();
 
   private final String name;
   private final double staticTimeSecs;
@@ -54,7 +52,7 @@ public abstract class Elevator<G extends Elevator.SlamElevatorGoal> {
   private boolean brakeModeEnabled = false;
   private BooleanSupplier coastModeSupplier = () -> false;
 
-  private final Alert disconnected;
+  // private final Alert disconnected;
 
   /**
    * Creates a new GenericSlamElevator
@@ -66,15 +64,14 @@ public abstract class Elevator<G extends Elevator.SlamElevatorGoal> {
    * @param minVelocityThresh Minimum velocity threshold for elevator to start stopping at in
    *     rads/sec of the last sprocket.
    */
-  public Elevator(
-      String name, ElevatorIO io, double staticTimeSecs, double minVelocityThresh) {
+  public Elevator(String name, ElevatorIO io, double staticTimeSecs, double minVelocityThresh) {
     this.name = name;
     this.io = io;
     this.staticTimeSecs = staticTimeSecs;
     this.minVelocityThresh = minVelocityThresh;
     setBrakeMode(true);
 
-    disconnected = new Alert(name + " disconnected!", Alert.AlertType.WARNING);
+    // disconnected = new Alert(name + " disconnected!", Alert.AlertType.WARNING);
   }
 
   public void setCoastOverride(BooleanSupplier coastOverride) {
@@ -106,7 +103,7 @@ public abstract class Elevator<G extends Elevator.SlamElevatorGoal> {
     lastGoal = getGoal();
 
     // Set alert
-    disconnected.set(!inputs.motorConnected);
+    // disconnected.set(!inputs.motorConnected);
 
     // Check if at goal.
     if (!atGoal) {

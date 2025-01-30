@@ -13,10 +13,6 @@
 
 package frc.robot;
 
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-
-import com.pathplanner.lib.auto.AutoBuilder;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -24,23 +20,16 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.constants.Camera;
 import frc.robot.constants.TunerConstants;
-import frc.robot.subsystems.apriltagvision.AprilTagVision;
-import frc.robot.subsystems.apriltagvision.photonvision.PhotonVision;
-import frc.robot.subsystems.apriltagvision.photonvision.PhotonVisionIOReal;
-import frc.robot.subsystems.apriltagvision.photonvision.PhotonVisionIOReplay;
-import frc.robot.subsystems.apriltagvision.photonvision.PhotonVisionIOSim;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.imu.GyroIO;
 import frc.robot.subsystems.drive.imu.GyroIOPigeon2;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.drive.module.ModuleIOSim;
 import frc.robot.subsystems.drive.module.ModuleIOTalonFX;
-import frc.robot.subsystems.elevator.Elevator;
-import frc.robot.Config;
+import frc.robot.subsystems.vision.*;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -50,16 +39,16 @@ import frc.robot.Config;
  */
 public class RobotContainer {
   // Subsystems
-  public  Drive drive;
-  public  AprilTagVision aprilTagVision;
-  public  Elevator elevator; 
-
+  public Drive drive;
+  public Vision vision;
+  // public  Elevator elevator;
+  // private final AutoFactory autoFactory;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
 
   // Dashboard inputs
-  private final LoggedDashboardChooser<Command> autoChooser;
+  // private final LoggedDashboardChooser<Command> autoChooser;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -73,13 +62,14 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.FrontRight),
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
-        aprilTagVision =
-            new AprilTagVision(
-                new PhotonVision(new PhotonVisionIOReal(Camera.BackCamera)),
-                new PhotonVision(new PhotonVisionIOReal(Camera.FrontRightCamera)),
-                new PhotonVision(new PhotonVisionIOReal(Camera.FrontLeftCamera)));
-        elevator = 
-            new Elevator<SlamElevatorGoal>() {};
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIOPhotonVision(Camera.BackCamera.name, Camera.BackCamera.robotToCam),
+                new VisionIOPhotonVision(
+                    Camera.FrontRightCamera.name, Camera.BackCamera.robotToCam),
+                new VisionIOPhotonVision(
+                    Camera.FrontLeftCamera.name, Camera.BackCamera.robotToCam));
         break;
 
       case SIM:
@@ -92,16 +82,17 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.BackLeft),
                 new ModuleIOSim(TunerConstants.BackRight));
 
-
-        aprilTagVision =
-            new AprilTagVision(
-                new PhotonVision(new PhotonVisionIOSim(Camera.BackCamera, drive::getPose)),
-                new PhotonVision(new PhotonVisionIOSim(Camera.FrontRightCamera, drive::getPose)),
-                new PhotonVision(new PhotonVisionIOSim(Camera.FrontLeftCamera, drive::getPose)));
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIOPhotonVisionSim(
+                    Camera.BackCamera.name, Camera.BackCamera.robotToCam, drive::getPose),
+                new VisionIOPhotonVisionSim(
+                    Camera.FrontRightCamera.name, Camera.BackCamera.robotToCam, drive::getPose),
+                new VisionIOPhotonVisionSim(
+                    Camera.FrontLeftCamera.name, Camera.BackCamera.robotToCam, drive::getPose));
 
         break;
-
-       
 
       default:
         // Replayed robot, disable IO implementations
@@ -113,35 +104,10 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
 
-        aprilTagVision =
-            new AprilTagVision(
-                new PhotonVision(new PhotonVisionIOReplay(Camera.BackCamera)),
-                new PhotonVision(new PhotonVisionIOReplay(Camera.FrontRightCamera)),
-                new PhotonVision(new PhotonVisionIOReplay(Camera.FrontLeftCamera)));
+        vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
+
         break;
     }
-
-    // Set up auto routines
-    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-
-    // Set up SysId routines
-    autoChooser.addOption(
-        "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
-    autoChooser.addOption(
-        "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-
-    // Configure the button bindings
-    configureButtonBindings();
   }
 
   /**
@@ -190,6 +156,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return autoChooser.get();
+    return null;
   }
 }

@@ -13,20 +13,15 @@
 
 package frc.robot.subsystems.drive;
 
+import static edu.wpi.first.math.MathUtil.angleModulus;
 import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static frc.robot.constants.DriveConstants.TrackWidthX;
+import static frc.robot.constants.TunableConstants.*;
 
 import com.ctre.phoenix6.CANBus;
-import com.ctre.phoenix6.swerve.jni.SwerveJNI.DriveState;
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
-import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.pathfinding.Pathfinding;
-import com.pathplanner.lib.util.PathPlannerLogging;
-
-import choreo.Choreo;
-import choreo.trajectory.Trajectory;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
@@ -45,61 +40,37 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.constants.DriveConstants;
-import frc.robot.constants.FieldConstants;
+import frc.robot.constants.TunerConstants;
 import frc.robot.subsystems.drive.imu.GyroIO;
+import frc.robot.subsystems.drive.imu.GyroIOInputsAutoLogged;
 import frc.robot.subsystems.drive.module.Module;
 import frc.robot.subsystems.drive.module.ModuleIO;
-import frc.robot.util.FieldPoseUtils;
-import frc.robot.util.LocalADStarAK;
-
+import frc.robot.subsystems.leds.Leds;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-
-//My imports 
-
-import static frc.robot.constants.DriveConstants.TrackWidthX;
-import static frc.robot.constants.DriveConstants.TrackWidthY;
-import static frc.robot.constants.TunableConstants.KpTheta;
-import static frc.robot.constants.TunableConstants.KpTranslation;
-//import com.choreo.lib.Choreo;
-//import com.choreo.lib.ChoreoTrajectory;
-
-import frc.robot.constants.DriveConstants;
-import frc.robot.constants.FieldConstants;
-import frc.robot.constants.MyTrajectory;
-import frc.robot.constants.TunableConstants;
-import frc.robot.constants.TunerConstants;
-import frc.robot.subsystems.leds.Leds;
-import frc.robot.util.MyAlliance;
-
-
-
 public class Drive extends SubsystemBase {
-  
+
   // TunerConstants doesn't include these constants, so they are declared locally
   public static final double ODOMETRY_FREQUENCY =
       new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD() ? 250.0 : 100.0;
@@ -149,16 +120,16 @@ public class Drive extends SubsystemBase {
       };
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
-      
 
-      private ChassisSpeeds chassisSpeeds = new ChassisSpeeds();
+  private ChassisSpeeds chassisSpeeds = new ChassisSpeeds();
 
-      private final ProfiledPIDController translationController;
-      private final ProfiledPIDController thetaController;
+  private final ProfiledPIDController translationController;
+  private final ProfiledPIDController thetaController;
 
-      private final Field2d smartDashboardField;
+  // private final AutoFactory autoFactory;
+  private final Field2d smartDashboardField;
+  private DriveState driveState = DriveState.NONE;
 
-      private DriveState driveState = DriveState.NONE;
   public Drive(
       GyroIO gyroIO,
       ModuleIO flModuleIO,
@@ -178,26 +149,6 @@ public class Drive extends SubsystemBase {
     PhoenixOdometryThread.getInstance().start();
 
     // Configure AutoBuilder for PathPlanner
-    AutoBuilder.configure(
-        this::getPose,
-        this::setPose,
-        this::getChassisSpeeds,
-        this::runVelocity,
-        new PPHolonomicDriveController(
-            new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
-        PP_CONFIG,
-        () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-        this);
-    Pathfinding.setPathfinder(new LocalADStarAK());
-    PathPlannerLogging.setLogActivePathCallback(
-        (activePath) -> {
-          Logger.recordOutput(
-              "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
-        });
-    PathPlannerLogging.setLogTargetPoseCallback(
-        (targetPose) -> {
-          Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
-        });
 
     // Configure SysId
     sysId =
@@ -209,6 +160,16 @@ public class Drive extends SubsystemBase {
                 (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+
+    translationController =
+        new ProfiledPIDController(KpTranslation, 0, 0, new TrapezoidProfile.Constraints(5, 5));
+    translationController.setTolerance(DriveConstants.DriveTolerance);
+    thetaController =
+        new ProfiledPIDController(KpTheta, 0, KdTheta, new TrapezoidProfile.Constraints(5, 5));
+    thetaController.setTolerance(DriveConstants.ThetaToleranceRad);
+    thetaController.enableContinuousInput(-Math.PI, Math.PI);
+
+    smartDashboardField = new Field2d();
   }
 
   @Override
@@ -426,12 +387,11 @@ public class Drive extends SubsystemBase {
     };
   }
 
-  //My new code!---------------------------------------------------
- 
+  // My new code!---------------------------------------------------
+
   public ChassisSpeeds calculatePIDVelocity(Pose2d targetPose) {
     return calculatePIDVelocity(targetPose, getPose(), 0, 0, 0);
   }
-  
 
   public ChassisSpeeds calculatePIDVelocity(
       Pose2d targetPose, Pose2d currentPose, double xFF, double yFF, double thetaFF) {
@@ -520,8 +480,8 @@ public class Drive extends SubsystemBase {
     return runToPose(targetPoseSupplier, true);
   }
 
-  public Command followPath(Trajectory trajectoryFile) {
-    Trajectory trajectory = Choreo.getTrajectory(trajectoryFile.fileName);
+  /*public Command followPath(String trajectoryFile) {
+    Trajectory<DifferentialSample> trajectory = Choreo.getTrajectory(trajectoryFile.fileName);
 
     return new SequentialCommandGroup(
         runToPose(() -> FieldPoseUtils.flipPoseIfRed(trajectory.getInitialPose()), false),
@@ -546,9 +506,28 @@ public class Drive extends SubsystemBase {
                     trajectoryState.velocityY,
                     trajectoryState.angularVelocity),
             this::runVelocity,
-            Alliance::isRed));
-  }
+            MyAlliance::isRed));
+  }*/
 
+  /*public Command followTrajectory(String trajectoryName) {
+      // Create a new autonomous routine
+      AutoRoutine routine = autoFactory.newRoutine("FollowPathRoutine");
+
+      // Load the trajectory within the routine
+      AutoTrajectory autoTrajectory = routine.trajectory(trajectoryName);
+
+      // Log trajectory information
+      Logger.recordOutput("Trajectory/Name", trajectoryName);
+      autoTrajectory.getInitialPose().ifPresent(pose ->
+          Logger.recordOutput("Trajectory/StartPose", pose.toString())
+      );
+      autoTrajectory.getFinalPose().ifPresent(pose ->
+          Logger.recordOutput("Trajectory/EndPose", pose.toString())
+      );
+
+      // Return the command to follow the trajectory
+      return autoTrajectory.cmd();
+  }*/
 
   public enum DriveState {
     NONE,
@@ -556,7 +535,7 @@ public class Drive extends SubsystemBase {
     ALIGNING_TO_AMP
   }
 
-  public Command alignToSpeaker() {
+  /*public Command alignToSpeaker() {
     return new InstantCommand(() -> setState(DriveState.ALIGNING_TO_SPEAKER))
         .andThen(
             new DeferredCommand(
@@ -581,7 +560,7 @@ public class Drive extends SubsystemBase {
                                       0)
                                   .rotateBy(
                                       Rotation2d.fromRadians(
-                                          Alliance.isRed()
+                                          MyAlliance.isRed()
                                               ? angle > Math.PI * 5 / 6
                                                   ? angle
                                                   : angle < Math.PI * -5 / 6
@@ -605,13 +584,13 @@ public class Drive extends SubsystemBase {
                 },
                 Set.of(this)))
         .finallyDo(() -> setState(DriveState.NONE));
-  }
+  }*/
 
-  public Command alignToNote(Translation2d noteTranslation) {
+  /*public Command alignToNote(Translation2d noteTranslation) {
     return new DeferredCommand(
         () -> {
           var targetTranslation =
-              Alliance.isRed()
+              MyAlliance.isRed()
                   ? noteTranslation.plus(
                       new Translation2d(
                               DriveConstants.WidthWithBumpersX / 2
@@ -645,8 +624,8 @@ public class Drive extends SubsystemBase {
               .andThen(runToPose(() -> targetPose));
         },
         Set.of(this));
-  }
-
+  }*/
+  /*
   public Command alignToAmp() {
     return new InstantCommand(() -> setState(DriveState.ALIGNING_TO_AMP))
         .andThen(
@@ -663,8 +642,8 @@ public class Drive extends SubsystemBase {
                 KpTranslation * 4,
                 KpTheta))
         .finallyDo(() -> setState(DriveState.NONE));
-  }
-
+  }*/
+  /*
   public Command alignToFrontOfAmp() {
     return new InstantCommand(() -> setState(DriveState.ALIGNING_TO_AMP))
         .andThen(
@@ -682,6 +661,7 @@ public class Drive extends SubsystemBase {
                             FieldConstants.AmpRotation))))
         .finallyDo(() -> setState(DriveState.NONE));
   }
+        */
 
   public void setState(DriveState state) {
     driveState = state;
@@ -732,5 +712,5 @@ public class Drive extends SubsystemBase {
               this);
         },
         Set.of(this));
-      }
+  }
 }

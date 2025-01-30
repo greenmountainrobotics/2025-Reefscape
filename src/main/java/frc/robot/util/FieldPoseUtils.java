@@ -3,12 +3,10 @@ package frc.robot.util;
 import static frc.robot.constants.DriveConstants.WidthWithBumpersX;
 import static frc.robot.constants.FieldConstants.*;
 
-import java.lang.reflect.Field;
-import java.util.function.Supplier;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import java.util.function.Supplier;
 
 public class FieldPoseUtils {
   public static Pose2d flipPose(Pose2d pose) {
@@ -23,26 +21,24 @@ public class FieldPoseUtils {
     else return pose;
   }
 
-
   public static Supplier<Pose2d> flipPoseIfRed(Supplier<Pose2d> pose) {
     if (MyAlliance.isRed()) {
-        return flipPose(pose, FieldWidth);
+      return flipPose(pose, FieldWidth);
     } else {
-        return pose;
+      return pose;
     }
-}
+  }
 
-public static Supplier<Pose2d> flipPose(Supplier<Pose2d> poseSupplier, double fieldWidth) {
+  public static Supplier<Pose2d> flipPose(Supplier<Pose2d> poseSupplier, double fieldWidth) {
     return () -> {
-        Pose2d pose = poseSupplier.get(); // Get the Pose2d from the Supplier
-        return new Pose2d(
-            fieldWidth - pose.getX(), // Flip the X-coordinate based on field width
-            pose.getY(),             // Keep the Y-coordinate unchanged
-            pose.getRotation().rotateBy(Rotation2d.fromDegrees(180)) // Rotate by 180 degrees
-        );
+      Pose2d pose = poseSupplier.get(); // Get the Pose2d from the Supplier
+      return new Pose2d(
+          fieldWidth - pose.getX(), // Flip the X-coordinate based on field width
+          pose.getY(), // Keep the Y-coordinate unchanged
+          pose.getRotation().rotateBy(Rotation2d.fromDegrees(180)) // Rotate by 180 degrees
+          );
     };
-}
-
+  }
 
   public static Translation2d flipTranslation(Translation2d translation) {
     return new Translation2d(FieldWidth - translation.getX(), translation.getY());
