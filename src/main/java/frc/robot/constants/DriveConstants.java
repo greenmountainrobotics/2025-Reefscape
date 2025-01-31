@@ -3,14 +3,15 @@ package frc.robot.constants;
 import static edu.wpi.first.math.util.Units.inchesToMeters;
 
 public final class DriveConstants {
-  public static final double TrackWidthY = inchesToMeters(17.587);
-  public static final double TrackWidthX = inchesToMeters(17.587);
-  public static final double WidthWithBumpersY = inchesToMeters(30.875);
-  public static final double WidthWithBumpersX = inchesToMeters(30.875);
+  public static final double TrackWidthY = inchesToMeters(23.750);
+  public static final double TrackWidthX = inchesToMeters(23.750);
+  public static final double WidthWithBumpersY = inchesToMeters(30.875); // Not Updated
+  public static final double WidthWithBumpersX = inchesToMeters(30.875); // Not Updated
 
   // Gear ratios for SDS MK4i L3
-  public static final double DriveGearRatio = (50.0 / 14.0) * (16.0 / 28.0) * (45.0 / 15.0);
-  public static final double TurnGearRatio = 150.0 / 7.0;
+  public static final double DriveGearRatio =
+      (50.0 / 14.0) * (16.0 / 28.0) * (45.0 / 15.0); // Not Updated
+  public static final double TurnGearRatio = 150.0 / 7.0; // Not Updated
 
   public static final double FrontLeftEncoderOffset = 0.022; // 1.718
   public static final double FrontRightEncoderOffset = 0.018; // -2.331

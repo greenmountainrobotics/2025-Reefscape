@@ -19,8 +19,8 @@ public final class IdConstants {
     public static final int BackRightTurnId = 11;
     public static final int BackRightEncoderId = 12;
 
-    public static final int LeftLiftMotorId = 13; // Kwaken
-    public static final int RightLiftMotorId = 14; // Kwaken
+    public static final int LeftElevatorMotorId = 13; // Kwaken
+    public static final int RightElevatorMotorId = 14; // Kwaken
 
     public static final int IntakeRotateMotorId = 15; // Neo
     public static final int IntakeSpinMotorId = 16; // 775
