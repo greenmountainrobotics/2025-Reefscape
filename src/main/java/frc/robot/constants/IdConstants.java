@@ -24,5 +24,7 @@ public final class IdConstants {
 
     public static final int IntakeRotateMotorId = 15; // Neo
     public static final int IntakeSpinMotorId = 16; // 775
+
+    public static final int LeftHangMotor = 17; 
   }
 }
