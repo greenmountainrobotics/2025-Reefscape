@@ -65,4 +65,12 @@ public final class FieldConstants {
       MiddleInnerNote.plus(new Translation2d(0, DistanceBetweenInnerNotes));
 
   public static final double NoteDiameter = inchesToMeters(14);
+
+    //------------------------------------------------------This years field constants-------------------
+
+
+
+
+
+
 }
