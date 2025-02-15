@@ -23,7 +23,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.constants.Camera;
 import frc.robot.constants.Constants;
-import frc.robot.constants.TunerConstants;
+import frc.robot.constants.SweveConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.imu.GyroIO;
 import frc.robot.subsystems.drive.imu.GyroIOPigeon2;
@@ -46,7 +46,8 @@ public class RobotContainer {
   // private final AutoFactory autoFactory;
 
   // Controller
-  private final CommandXboxController controller = new CommandXboxController(0);
+  private final CommandXboxController controller1 = new CommandXboxController(0);
+  private final CommandXboxController controller2 = new CommandXboxController(1);
 
   // Dashboard inputs
   // private final LoggedDashboardChooser<Command> autoChooser;
@@ -59,18 +60,20 @@ public class RobotContainer {
         drive =
             new Drive(
                 new GyroIOPigeon2(),
-                new ModuleIOTalonFX(TunerConstants.FrontLeft),
-                new ModuleIOTalonFX(TunerConstants.FrontRight),
-                new ModuleIOTalonFX(TunerConstants.BackLeft),
-                new ModuleIOTalonFX(TunerConstants.BackRight));
+                new ModuleIOTalonFX(SweveConstants.FrontLeft),
+                new ModuleIOTalonFX(SweveConstants.FrontRight),
+                new ModuleIOTalonFX(SweveConstants.BackLeft),
+                new ModuleIOTalonFX(SweveConstants.BackRight));
         vision =
-            new Vision(
-                drive::addVisionMeasurement,
-                new VisionIOPhotonVision(Camera.BackCamera.name, Camera.BackCamera.robotToCam),
-                new VisionIOPhotonVision(
-                    Camera.FrontRightCamera.name, Camera.BackCamera.robotToCam),
-                new VisionIOPhotonVision(
-                    Camera.FrontLeftCamera.name, Camera.BackCamera.robotToCam));
+        new Vision(
+            drive::addVisionMeasurement,
+            new VisionIOPhotonVision(Camera.BackCamera.name, Camera.BackCamera.robotToCam)
+                 /* ,new VisionIOPhotonVision(
+                Camera.FrontRightCamera.name, Camera.BackCamera.robotToCam),
+            new VisionIOPhotonVision(
+                Camera.FrontLeftCamera.name, Camera.BackCamera.robotToCam)*/
+
+            );
         break;
 
       case SIM:
@@ -78,10 +81,10 @@ public class RobotContainer {
         drive =
             new Drive(
                 new GyroIO() {},
-                new ModuleIOSim(TunerConstants.FrontLeft),
-                new ModuleIOSim(TunerConstants.FrontRight),
-                new ModuleIOSim(TunerConstants.BackLeft),
-                new ModuleIOSim(TunerConstants.BackRight));
+                new ModuleIOSim(SweveConstants.FrontLeft),
+                new ModuleIOSim(SweveConstants.FrontRight),
+                new ModuleIOSim(SweveConstants.BackLeft),
+                new ModuleIOSim(SweveConstants.BackRight));
 
         vision =
             new Vision(
@@ -109,6 +112,8 @@ public class RobotContainer {
 
         break;
     }
+
+    configureButtonBindings();
   }
 
   /**
@@ -122,25 +127,25 @@ public class RobotContainer {
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
-            () -> -controller.getLeftY(),
-            () -> -controller.getLeftX(),
-            () -> -controller.getRightX()));
+            () -> -controller1.getLeftY(),
+            () -> -controller1.getLeftX(),
+            () -> -controller1.getRightX()));
 
     // Lock to 0° when A button is held
-    controller
+    controller1
         .a()
         .whileTrue(
             DriveCommands.joystickDriveAtAngle(
                 drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
+                () -> -controller1.getLeftY(),
+                () -> -controller1.getLeftX(),
                 () -> new Rotation2d()));
 
     // Switch to X pattern when X button is pressed
-    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    controller1.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
     // Reset gyro to 0° when B button is pressed
-    controller
+    controller1
         .b()
         .onTrue(
             Commands.runOnce(

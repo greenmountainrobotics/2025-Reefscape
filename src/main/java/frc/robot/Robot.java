@@ -21,7 +21,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.constants.BuildConstants;
 import frc.robot.constants.Constants;
-import frc.robot.constants.TunerConstants;
+import frc.robot.constants.SweveConstants;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -86,10 +86,10 @@ public class Robot extends LoggedRobot {
     // Check for valid swerve config
     var modules =
         new SwerveModuleConstants[] {
-          TunerConstants.FrontLeft,
-          TunerConstants.FrontRight,
-          TunerConstants.BackLeft,
-          TunerConstants.BackRight
+          SweveConstants.FrontLeft,
+          SweveConstants.FrontRight,
+          SweveConstants.BackLeft,
+          SweveConstants.BackRight
         };
     for (var constants : modules) {
       if (constants.DriveMotorType != DriveMotorArrangement.TalonFX_Integrated

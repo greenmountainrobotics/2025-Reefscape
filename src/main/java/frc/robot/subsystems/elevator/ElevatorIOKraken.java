@@ -7,105 +7,115 @@
 
 package frc.robot.subsystems.elevator;
 
-import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.NeutralOut;
-import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.DigitalInput;
+import frc.robot.constants.ElevatorConstants;
+import frc.robot.constants.IdConstants;
 
 public class ElevatorIOKraken implements ElevatorIO {
   // Hardware
-  private final TalonFX talon;
+  private final TalonFX elevatorLeft = new TalonFX(IdConstants.CANId.LeftElevatorMotorId);
+  private final TalonFX elevatorRight = new TalonFX(IdConstants.CANId.RightElevatorMotorId);
+
+  // private final RelativeEncoder rightEncoder;
+  // private final RelativeEncoder leftEncoder;
+
+  private final DigitalInput limitSwitch = new DigitalInput(IdConstants.DIOId.LimitSwitchId);
 
   // Status Signals
-  private final StatusSignal<Angle> positionRotations;
-  private final StatusSignal<AngularVelocity> velocityRps;
-  private final StatusSignal<Voltage> appliedVoltage;
-  private final StatusSignal<Current> supplyCurrent;
-  private final StatusSignal<Current> torqueCurrent;
-  private final StatusSignal<Temperature> tempCelsius;
+  private final StatusSignal<Angle> leftPositionRads;
+  private final StatusSignal<AngularVelocity> leftVelocityRadsPerSec;
+  private final StatusSignal<Voltage> leftAppliedVoltage;
+  private final StatusSignal<Current> leftSupplyCurrentAmps;
+  private final StatusSignal<Current> leftTorqueCurrentAmps;
+  private final StatusSignal<Temperature> leftTempCelsius;
 
-  // Control
-  private final TorqueCurrentFOC currentControl = new TorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
-  private final NeutralOut neutralOut = new NeutralOut();
+  private final StatusSignal<Angle> rightPositionRads;
+  private final StatusSignal<AngularVelocity> rightVelocityRadsPerSec;
+  private final StatusSignal<Voltage> rightAppliedVoltage;
+  private final StatusSignal<Current> rightSupplyCurrentAmps;
+  private final StatusSignal<Current> rightTorqueCurrentAmps;
+  private final StatusSignal<Temperature> rightTempCelsius;
 
-  // Reduction to final sprocket
-  private final double reduction;
+  public ElevatorIOKraken() {
 
-  public ElevatorIOKraken(
-      int id, String bus, int currentLimitAmps, boolean invert, double reduction) {
-    talon = new TalonFX(id, bus);
-    this.reduction = reduction;
+    TalonFXConfiguration configLeft = new TalonFXConfiguration();
+    configLeft.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    configLeft.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    configLeft.CurrentLimits.SupplyCurrentLimit = ElevatorConstants.currentLimitAmps;
+    configLeft.CurrentLimits.SupplyCurrentLimitEnable = true;
+    elevatorLeft.getConfigurator().apply(configLeft);
 
-    TalonFXConfiguration config = new TalonFXConfiguration();
-    config.MotorOutput.Inverted =
-        invert ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
-    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    config.CurrentLimits.SupplyCurrentLimit = currentLimitAmps;
-    config.CurrentLimits.SupplyCurrentLimitEnable = true;
-    talon.getConfigurator().apply(config);
+    TalonFXConfiguration configRight = new TalonFXConfiguration();
+    configRight.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    configRight.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    configRight.CurrentLimits.SupplyCurrentLimit = ElevatorConstants.currentLimitAmps;
+    configRight.CurrentLimits.SupplyCurrentLimitEnable = true;
+    elevatorRight.getConfigurator().apply(configRight);
 
-    positionRotations = talon.getPosition();
-    velocityRps = talon.getVelocity();
-    appliedVoltage = talon.getMotorVoltage();
-    supplyCurrent = talon.getSupplyCurrent();
-    torqueCurrent = talon.getTorqueCurrent();
-    tempCelsius = talon.getDeviceTemp();
+    leftPositionRads = elevatorLeft.getPosition();
+    leftVelocityRadsPerSec = elevatorLeft.getVelocity();
+    leftAppliedVoltage = elevatorLeft.getMotorVoltage();
+    leftSupplyCurrentAmps = elevatorLeft.getSupplyCurrent();
+    leftTorqueCurrentAmps = elevatorLeft.getTorqueCurrent();
+    leftTempCelsius = elevatorLeft.getDeviceTemp();
 
-    BaseStatusSignal.setUpdateFrequencyForAll(
-        50.0,
-        positionRotations,
-        velocityRps,
-        appliedVoltage,
-        supplyCurrent,
-        torqueCurrent,
-        tempCelsius);
+    rightPositionRads = elevatorRight.getPosition();
+    rightVelocityRadsPerSec = elevatorRight.getVelocity();
+    rightAppliedVoltage = elevatorRight.getMotorVoltage();
+    rightSupplyCurrentAmps = elevatorRight.getSupplyCurrent();
+    rightTorqueCurrentAmps = elevatorRight.getTorqueCurrent();
+    rightTempCelsius = elevatorRight.getDeviceTemp();
 
-    talon.optimizeBusUtilization(0, 1.0);
+    //  rightEncoder = elevatorRight.getEncoder();
   }
 
-  @Override
-  public void updateInputs(GenericSlamElevatorIOInputs inputs) {
-    inputs.motorConnected =
-        BaseStatusSignal.refreshAll(
-                positionRotations,
-                velocityRps,
-                appliedVoltage,
-                supplyCurrent,
-                torqueCurrent,
-                tempCelsius)
-            .isOK();
-    inputs.positionRads =
-        Units.rotationsToRadians(positionRotations.getValueAsDouble()) / reduction;
-    inputs.velocityRadsPerSec =
-        Units.rotationsToRadians(velocityRps.getValueAsDouble()) / reduction;
-    inputs.appliedVoltage = appliedVoltage.getValueAsDouble();
-    inputs.supplyCurrentAmps = supplyCurrent.getValueAsDouble();
-    inputs.torqueCurrentAmps = torqueCurrent.getValueAsDouble();
-    inputs.tempCelsius = tempCelsius.getValueAsDouble();
-  }
+  // @Override
+  // public void updateInputs(ElevatorIO inputs) {
+  /*inputs.leftMotorConnected =
+      BaseStatusSignal.refreshAll(
+              leftPositionRads,
+              leftVelocityRadsPerSec,
+              leftAppliedVoltage,
+              leftSupplyCurrentAmps,
+              leftTorqueCurrentAmps,
+              leftTempCelsius)
+          .isOK();
+
+  inputs.rightMotorConnected =
+  BaseStatusSignal.refreshAll(
+          rightPositionRads,
+          rightVelocityRadsPerSec,
+          rightAppliedVoltage,
+          rightSupplyCurrentAmps,
+          rightTorqueCurrentAmps,
+          rightTempCelsius)
+      .isOK();*/
+
+  //  }
 
   @Override
-  public void runCurrent(double amps) {
-    talon.setControl(currentControl.withOutput(amps));
+  public void runVoltage(double volts) {
+    elevatorLeft.setVoltage(volts);
   }
 
   @Override
   public void stop() {
-    talon.setControl(neutralOut);
+    elevatorLeft.setVoltage(0);
   }
 
   @Override
   public void setBrakeMode(boolean enable) {
-    talon.setNeutralMode(enable ? NeutralModeValue.Brake : NeutralModeValue.Coast);
+    elevatorLeft.setNeutralMode(enable ? NeutralModeValue.Brake : NeutralModeValue.Coast);
+    elevatorRight.setNeutralMode(enable ? NeutralModeValue.Brake : NeutralModeValue.Coast);
   }
 }

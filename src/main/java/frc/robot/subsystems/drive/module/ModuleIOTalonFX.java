@@ -40,7 +40,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
-import frc.robot.constants.TunerConstants;
+import frc.robot.constants.SweveConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.PhoenixOdometryThread;
 import java.util.Queue;
@@ -100,9 +100,9 @@ public class ModuleIOTalonFX implements ModuleIO {
       SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
           constants) {
     this.constants = constants;
-    driveTalon = new TalonFX(constants.DriveMotorId, TunerConstants.DrivetrainConstants.CANBusName);
-    turnTalon = new TalonFX(constants.SteerMotorId, TunerConstants.DrivetrainConstants.CANBusName);
-    cancoder = new CANcoder(constants.EncoderId, TunerConstants.DrivetrainConstants.CANBusName);
+    driveTalon = new TalonFX(constants.DriveMotorId, SweveConstants.DriveBaseName);
+    turnTalon = new TalonFX(constants.SteerMotorId, SweveConstants.DriveBaseName);
+    cancoder = new CANcoder(constants.EncoderId, SweveConstants.DriveBaseName);
 
     // Configure drive motor
     var driveConfig = constants.DriveMotorInitialConfigs;

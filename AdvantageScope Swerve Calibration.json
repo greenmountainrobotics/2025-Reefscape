@@ -149,7 +149,7 @@
                 "leftSources": [
                   {
                     "type": "stepped",
-                    "logKey": "/Drive/Module0/TurnPosition/value",
+                    "logKey": "/Drive/FrontLeft/TurnPosition/value",
                     "logType": "Number",
                     "visible": true,
                     "options": {
@@ -159,7 +159,7 @@
                   },
                   {
                     "type": "stepped",
-                    "logKey": "/Drive/Module1/TurnPosition/value",
+                    "logKey": "/Drive/FrontRight/TurnPosition/value",
                     "logType": "Number",
                     "visible": true,
                     "options": {
@@ -169,7 +169,7 @@
                   },
                   {
                     "type": "stepped",
-                    "logKey": "/Drive/Module2/TurnPosition/value",
+                    "logKey": "/Drive/BackLeft/TurnPosition/value",
                     "logType": "Number",
                     "visible": true,
                     "options": {
@@ -179,7 +179,7 @@
                   },
                   {
                     "type": "stepped",
-                    "logKey": "/Drive/Module3/TurnPosition/value",
+                    "logKey": "/Drive/BackRight/TurnPosition/value",
                     "logType": "Number",
                     "visible": true,
                     "options": {
@@ -214,7 +214,7 @@
                 "leftSources": [
                   {
                     "type": "stepped",
-                    "logKey": "/Drive/Module0/DrivePositionRad",
+                    "logKey": "/Drive/FrontLeft/DrivePositionRad",
                     "logType": "Number",
                     "visible": true,
                     "options": {
@@ -224,7 +224,7 @@
                   },
                   {
                     "type": "stepped",
-                    "logKey": "/Drive/Module1/DrivePositionRad",
+                    "logKey": "/Drive/FrontRight/DrivePositionRad",
                     "logType": "Number",
                     "visible": true,
                     "options": {
@@ -234,7 +234,7 @@
                   },
                   {
                     "type": "stepped",
-                    "logKey": "/Drive/Module2/DrivePositionRad",
+                    "logKey": "/Drive/BackLeft/DrivePositionRad",
                     "logType": "Number",
                     "visible": true,
                     "options": {
@@ -244,7 +244,7 @@
                   },
                   {
                     "type": "stepped",
-                    "logKey": "/Drive/Module3/DrivePositionRad",
+                    "logKey": "/Drive/BackRight/DrivePositionRad",
                     "logType": "Number",
                     "visible": true,
                     "options": {
@@ -414,7 +414,7 @@
                 "leftSources": [
                   {
                     "type": "stepped",
-                    "logKey": "/Drive/Module0/DriveCurrentAmps",
+                    "logKey": "/Drive/FrontLeft/DriveCurrentAmps",
                     "logType": "Number",
                     "visible": true,
                     "options": {
@@ -426,7 +426,7 @@
                 "rightSources": [
                   {
                     "type": "stepped",
-                    "logKey": "/Drive/Module0/DriveVelocityRadPerSec",
+                    "logKey": "/Drive/FrontLeft/DriveVelocityRadPerSec",
                     "logType": "Number",
                     "visible": true,
                     "options": {

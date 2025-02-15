@@ -10,26 +10,31 @@ package frc.robot.subsystems.elevator;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface ElevatorIO {
+
   @AutoLog
-  class GenericSlamElevatorIOInputs {
-    public boolean motorConnected = true;
-    public double positionRads = 0.0;
-    public double velocityRadsPerSec = 0.0;
-    public double appliedVoltage = 0.0;
-    public double supplyCurrentAmps = 0.0;
-    public double torqueCurrentAmps = 0.0;
-    public double tempCelsius = 0.0;
+  class ElevatorIOInputs {
+    public boolean leftMotorConnected = true;
+    public double leftPositionRads = 0.0;
+    public double leftVelocityRadsPerSec = 0.0;
+    public double leftAppliedVoltage = 0.0;
+    public double leftSupplyCurrentAmps = 0.0;
+    public double leftTorqueCurrentAmps = 0.0;
+    public double leftTempCelsius = 0.0;
+
+    public boolean rightMotorConnected = true;
+    public double rightPositionRads = 0.0;
+    public double rightVelocityRadsPerSec = 0.0;
+    public double rightAppliedVoltage = 0.0;
+    public double rightSupplyCurrentAmps = 0.0;
+    public double rightTorqueCurrentAmps = 0.0;
+    public double rightTempCelsius = 0.0;
   }
 
-  /** Update the inputs. */
-  default void updateInputs(GenericSlamElevatorIOInputs inputs) {}
+  default void updateInputs(ElevatorIOInputs inputs) {}
 
-  /** Run slam elevator at amps */
-  default void runCurrent(double amps) {}
+  default void runVoltage(double amps) {}
 
-  /** Stop slam elevator */
   default void stop() {}
 
-  /** Enable or disable brake mode on the elevator motor. */
   default void setBrakeMode(boolean enable) {}
 }
