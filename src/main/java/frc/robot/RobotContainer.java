@@ -23,7 +23,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.constants.Camera;
 import frc.robot.constants.Constants;
-import frc.robot.constants.SweveConstants;
+import frc.robot.constants.SwerveConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.imu.GyroIO;
 import frc.robot.subsystems.drive.imu.GyroIOPigeon2;
@@ -60,20 +60,20 @@ public class RobotContainer {
         drive =
             new Drive(
                 new GyroIOPigeon2(),
-                new ModuleIOTalonFX(SweveConstants.FrontLeft),
-                new ModuleIOTalonFX(SweveConstants.FrontRight),
-                new ModuleIOTalonFX(SweveConstants.BackLeft),
-                new ModuleIOTalonFX(SweveConstants.BackRight));
+                new ModuleIOTalonFX(SwerveConstants.FrontLeft),
+                new ModuleIOTalonFX(SwerveConstants.FrontRight),
+                new ModuleIOTalonFX(SwerveConstants.BackLeft),
+                new ModuleIOTalonFX(SwerveConstants.BackRight));
         vision =
-        new Vision(
-            drive::addVisionMeasurement,
-            new VisionIOPhotonVision(Camera.BackCamera.name, Camera.BackCamera.robotToCam)
-                 /* ,new VisionIOPhotonVision(
-                Camera.FrontRightCamera.name, Camera.BackCamera.robotToCam),
-            new VisionIOPhotonVision(
-                Camera.FrontLeftCamera.name, Camera.BackCamera.robotToCam)*/
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIOPhotonVision(Camera.BackCamera.name, Camera.BackCamera.robotToCam)
+                /* ,new VisionIOPhotonVision(
+                    Camera.FrontRightCamera.name, Camera.BackCamera.robotToCam),
+                new VisionIOPhotonVision(
+                    Camera.FrontLeftCamera.name, Camera.BackCamera.robotToCam)*/
 
-            );
+                );
         break;
 
       case SIM:
@@ -81,10 +81,10 @@ public class RobotContainer {
         drive =
             new Drive(
                 new GyroIO() {},
-                new ModuleIOSim(SweveConstants.FrontLeft),
-                new ModuleIOSim(SweveConstants.FrontRight),
-                new ModuleIOSim(SweveConstants.BackLeft),
-                new ModuleIOSim(SweveConstants.BackRight));
+                new ModuleIOSim(SwerveConstants.FrontLeft),
+                new ModuleIOSim(SwerveConstants.FrontRight),
+                new ModuleIOSim(SwerveConstants.BackLeft),
+                new ModuleIOSim(SwerveConstants.BackRight));
 
         vision =
             new Vision(

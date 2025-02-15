@@ -20,4 +20,7 @@ public final class DriveConstants {
 
   public static final double DriveTolerance = 0.025;
   public static final double ThetaToleranceRad = 0.03;
+
+  public static final int kPigeonId = 13;
+  public static final String DriveBaseName = "Drivetrain";
 }

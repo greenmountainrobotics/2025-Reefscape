@@ -66,11 +66,7 @@ public final class FieldConstants {
 
   public static final double NoteDiameter = inchesToMeters(14);
 
-    //------------------------------------------------------This years field constants-------------------
-
-
-
-
-
+  // ------------------------------------------------------This years field
+  // constants-------------------
 
 }
