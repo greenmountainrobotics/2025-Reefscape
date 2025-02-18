@@ -69,8 +69,56 @@ public final class FieldConstants {
     //------------------------------------------------------This years field constants-------------------
 
 
+    public static final double AlgaeDiameter = inchesToMeters(16);
 
+    public static final Translation2d proccesserCenter = 
+        new Translation2d(inchesToMeters(14), inchesToMeters(10));
 
+    public static final double FieldWidth =
+      inchesToMeters(
+          76.1 * 2 // 2 * width of amp
+              + 250.50 * 2); // 2 * width between centerline and source
+    public static final double FieldHeight = inchesToMeters(323.00);
+    
+    public static final Translation2d SourceCloseSideCorner =
+    new Translation2d(
+        FieldWidth - inchesToMeters(76.1), // field width - width of amp
+        0.0 // on bottom edge of field
+        );
+    public static final Translation2d AllenceArea =
+        new Translation2d(inchesToMeters(360,164.375));
 
+    //branches Info--------------------------------------------------------------------
+    //branchs heights
+    public static final double frontEdgeTroughFromCarpet = inchesToMeters(18);
 
+    public static final double BranchTwoHeight = inchesToMeters(31.875);
+    public static final double BranchThreeHeight = inchesToMeters(47.625);
+    public static final double BranchFourHeight = inchesToMeters(72);
+    //braches angles
+    public static final double BranchAngle = 35; 
+    public static final double BranchAngleFour = 90; //level 4 is Vertical 
+
+    //Cage Info------------------------------------------------------------------------
+    public static final double BottemHighCageHeightFromBarge = inchesToMeters(76);
+    public static final double CageHeight = inchesToMeters(24);
+    public static final double CageWidth = inchesToMeters(31.375);
+    public static final Translation2d CageDimensions = 
+        new Translation2d (CageWidth, CageHeight);
+    public static final double ShallowCageHeightFromCarpet = inchesToMeters(30.125);
+    public static final double DeepCageHeightFromCarpet = inchesToMeters()
+
+    public static final double CageOneDistanceFromMidFeild = inchesToMeters(41.5);
+    public static final double CageTwoDistanceFromMidFeild = inchesToMeters(84.375);
+    public static final double CageThreeDistanceFromMidFeild = inchesToMeters(127.375);
+    //Barge Info-----------------------------------------------------------------------
+    public static final double BargeDepth = inchesToMeters(46);
+    public static final double BargeWith = inchesToMeters(146.5);
+    public static final double BargeToReef = inchesToMeters(88);
+    //Coral Station----------------------------------------------------------
+    public static final double CoralMarkSize = inchesToMeters(4);
+    public static final double CoralStationWith = inchesToMeters(70.875);
+    public static final double CoralStationDepth = inchesToMeters(164.375)
+
+    j
 }
