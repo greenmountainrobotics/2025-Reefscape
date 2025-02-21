@@ -13,6 +13,8 @@
 
 package frc.robot;
 
+import static frc.robot.constants.VisionConstants.*;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -21,7 +23,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
-import frc.robot.constants.Camera;
 import frc.robot.constants.Constants;
 import frc.robot.constants.SwerveConstants;
 import frc.robot.subsystems.drive.Drive;
@@ -66,8 +67,7 @@ public class RobotContainer {
                 new ModuleIOTalonFX(SwerveConstants.BackRight));
         vision =
             new Vision(
-                drive::addVisionMeasurement,
-                new VisionIOPhotonVision(Camera.BackCamera.name, Camera.BackCamera.robotToCam)
+                drive::addVisionMeasurement, new VisionIOPhotonVision(camera0Name, robotToCamera0)
                 /* ,new VisionIOPhotonVision(
                     Camera.FrontRightCamera.name, Camera.BackCamera.robotToCam),
                 new VisionIOPhotonVision(
@@ -89,12 +89,10 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive::addVisionMeasurement,
-                new VisionIOPhotonVisionSim(
-                    Camera.BackCamera.name, Camera.BackCamera.robotToCam, drive::getPose),
-                new VisionIOPhotonVisionSim(
-                    Camera.FrontRightCamera.name, Camera.BackCamera.robotToCam, drive::getPose),
-                new VisionIOPhotonVisionSim(
-                    Camera.FrontLeftCamera.name, Camera.BackCamera.robotToCam, drive::getPose));
+                new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose)
+                //    ,new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose)
+
+                );
 
         break;
 

@@ -231,6 +231,9 @@ public class Drive extends SubsystemBase {
 
       // Apply update
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
+
+      smartDashboardField.setRobotPose(getPose());
+      SmartDashboard.putData("Field", smartDashboardField);
     }
 
     // Update gyro alert
