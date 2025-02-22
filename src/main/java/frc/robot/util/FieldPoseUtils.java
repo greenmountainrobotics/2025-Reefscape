@@ -1,6 +1,5 @@
 package frc.robot.util;
 
-import static frc.robot.constants.DriveConstants.WidthWithBumpersX;
 import static frc.robot.constants.FieldConstants.*;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -49,7 +48,7 @@ public class FieldPoseUtils {
     else return translation;
   }
 
-  public static Pose2d alignedWithSourcePose() {
+  /*public static Pose2d alignedWithSourcePose() {
     Pose2d pose =
         new Pose2d(
             SourceCloseSideCorner.plus(SourceFarSideCorner)
@@ -58,9 +57,9 @@ public class FieldPoseUtils {
             SourceRotation);
     if (MyAlliance.isRed()) pose = FieldPoseUtils.flipPose(pose);
     return pose;
-  }
+  }*/
 
-  public static Pose2d alignedWithAmpPose() {
+  /*public static Pose2d alignedWithAmpPose() {
     Pose2d pose =
         new Pose2d(
             AmpCenter.minus(
@@ -70,5 +69,5 @@ public class FieldPoseUtils {
             AmpRotation);
     if (MyAlliance.isRed()) pose = FieldPoseUtils.flipPose(pose);
     return pose;
-  }
+  }*/
 }
