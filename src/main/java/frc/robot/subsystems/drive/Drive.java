@@ -15,10 +15,10 @@ package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.math.MathUtil.angleModulus;
 import static edu.wpi.first.units.Units.*;
-import static edu.wpi.first.units.Units.MetersPerSecond;
 import static frc.robot.constants.DriveConstants.TrackWidthX;
 import static frc.robot.constants.TunableConstants.*;
 
+import choreo.trajectory.SwerveSample;
 import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
@@ -55,7 +55,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.Constants;
 import frc.robot.constants.Constants.Mode;
 import frc.robot.constants.DriveConstants;
-import frc.robot.constants.SweveConstants;
+import frc.robot.constants.FieldConstants;
+import frc.robot.constants.SwerveConstants;
 import frc.robot.subsystems.drive.imu.GyroIO;
 import frc.robot.subsystems.drive.imu.GyroIOInputsAutoLogged;
 import frc.robot.subsystems.drive.module.Module;
@@ -63,7 +64,6 @@ import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.leds.Leds;
 import frc.robot.util.FieldPoseUtils;
 import frc.robot.util.MyAlliance;
-
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -77,15 +77,17 @@ public class Drive extends SubsystemBase {
 
   // TunerConstants doesn't include these constants, so they are declared locally
   public static final double ODOMETRY_FREQUENCY =
-      new CANBus(SweveConstants.DrivetrainConstants.CANBusName).isNetworkFD() ? 250.0 : 100.0;
+      new CANBus(SwerveConstants.DrivetrainConstants.CANBusName).isNetworkFD() ? 250.0 : 100.0;
   public static final double DRIVE_BASE_RADIUS =
       Math.max(
           Math.max(
-              Math.hypot(SweveConstants.FrontLeft.LocationX, SweveConstants.FrontLeft.LocationY),
-              Math.hypot(SweveConstants.FrontRight.LocationX, SweveConstants.FrontRight.LocationY)),
+              Math.hypot(SwerveConstants.FrontLeft.LocationX, SwerveConstants.FrontLeft.LocationY),
+              Math.hypot(
+                  SwerveConstants.FrontRight.LocationX, SwerveConstants.FrontRight.LocationY)),
           Math.max(
-              Math.hypot(SweveConstants.BackLeft.LocationX, SweveConstants.BackLeft.LocationY),
-              Math.hypot(SweveConstants.BackRight.LocationX, SweveConstants.BackRight.LocationY)));
+              Math.hypot(SwerveConstants.BackLeft.LocationX, SwerveConstants.BackLeft.LocationY),
+              Math.hypot(
+                  SwerveConstants.BackRight.LocationX, SwerveConstants.BackRight.LocationY)));
 
   // PathPlanner config constants
   private static final double ROBOT_MASS_KG = 74.088;
@@ -96,12 +98,12 @@ public class Drive extends SubsystemBase {
           ROBOT_MASS_KG,
           ROBOT_MOI,
           new ModuleConfig(
-              SweveConstants.FrontLeft.WheelRadius,
-              SweveConstants.kSpeedAt12Volts.in(MetersPerSecond),
+              SwerveConstants.FrontLeft.WheelRadius,
+              SwerveConstants.kSpeedAt12Volts.in(MetersPerSecond),
               WHEEL_COF,
               DCMotor.getKrakenX60Foc(1)
-                  .withReduction(SweveConstants.FrontLeft.DriveMotorGearRatio),
-              SweveConstants.FrontLeft.SlipCurrent,
+                  .withReduction(SwerveConstants.FrontLeft.DriveMotorGearRatio),
+              SwerveConstants.FrontLeft.SlipCurrent,
               1),
           getModuleTranslations());
 
@@ -141,10 +143,10 @@ public class Drive extends SubsystemBase {
       ModuleIO blModuleIO,
       ModuleIO brModuleIO) {
     this.gyroIO = gyroIO;
-    modules[0] = new Module(flModuleIO, 0, SweveConstants.FrontLeft);
-    modules[1] = new Module(frModuleIO, 1, SweveConstants.FrontRight);
-    modules[2] = new Module(blModuleIO, 2, SweveConstants.BackLeft);
-    modules[3] = new Module(brModuleIO, 3, SweveConstants.BackRight);
+    modules[0] = new Module(flModuleIO, 0, SwerveConstants.FrontLeft);
+    modules[1] = new Module(frModuleIO, 1, SwerveConstants.FrontRight);
+    modules[2] = new Module(blModuleIO, 2, SwerveConstants.BackLeft);
+    modules[3] = new Module(brModuleIO, 3, SwerveConstants.BackRight);
 
     // Usage reporting for swerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
@@ -229,6 +231,9 @@ public class Drive extends SubsystemBase {
 
       // Apply update
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
+
+      smartDashboardField.setRobotPose(getPose());
+      SmartDashboard.putData("Field", smartDashboardField);
     }
 
     // Update gyro alert
@@ -244,7 +249,7 @@ public class Drive extends SubsystemBase {
     // Calculate module setpoints
     ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
     SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
-    SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, SweveConstants.kSpeedAt12Volts);
+    SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, SwerveConstants.kSpeedAt12Volts);
 
     // Log unoptimized setpoints and setpoint speeds
     Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
@@ -373,7 +378,7 @@ public class Drive extends SubsystemBase {
 
   /** Returns the maximum linear speed in meters per sec. */
   public double getMaxLinearSpeedMetersPerSec() {
-    return SweveConstants.kSpeedAt12Volts.in(MetersPerSecond);
+    return SwerveConstants.kSpeedAt12Volts.in(MetersPerSecond);
   }
 
   /** Returns the maximum angular speed in radians per sec. */
@@ -384,10 +389,10 @@ public class Drive extends SubsystemBase {
   /** Returns an array of module translations. */
   public static Translation2d[] getModuleTranslations() {
     return new Translation2d[] {
-      new Translation2d(SweveConstants.FrontLeft.LocationX, SweveConstants.FrontLeft.LocationY),
-      new Translation2d(SweveConstants.FrontRight.LocationX, SweveConstants.FrontRight.LocationY),
-      new Translation2d(SweveConstants.BackLeft.LocationX, SweveConstants.BackLeft.LocationY),
-      new Translation2d(SweveConstants.BackRight.LocationX, SweveConstants.BackRight.LocationY)
+      new Translation2d(SwerveConstants.FrontLeft.LocationX, SwerveConstants.FrontLeft.LocationY),
+      new Translation2d(SwerveConstants.FrontRight.LocationX, SwerveConstants.FrontRight.LocationY),
+      new Translation2d(SwerveConstants.BackLeft.LocationX, SwerveConstants.BackLeft.LocationY),
+      new Translation2d(SwerveConstants.BackRight.LocationX, SwerveConstants.BackRight.LocationY)
     };
   }
 
@@ -512,6 +517,22 @@ public class Drive extends SubsystemBase {
             this::runVelocity,
             MyAlliance::isRed));
   }*/
+
+  public void followTrajectory(SwerveSample sample) {
+    // Get the current pose of the robot
+    Pose2d pose = getPose();
+
+    // Generate the next speeds for the robot
+    ChassisSpeeds speeds =
+        new ChassisSpeeds(
+            sample.vx + translationController.calculate(pose.getX(), sample.x),
+            sample.vy + translationController.calculate(pose.getY(), sample.y),
+            sample.omega
+                + thetaController.calculate(pose.getRotation().getRadians(), sample.heading));
+
+    // Apply the generated speeds
+    runVelocity(speeds);
+  }
 
   /*public Command followTrajectory(String trajectoryName) {
       // Create a new autonomous routine
