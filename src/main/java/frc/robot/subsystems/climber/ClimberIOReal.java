@@ -1,17 +1,16 @@
-package frc.robot.subsystem.climber;
+package frc.robot.subsystems.climber;
+
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.motorcontrol.VictorSP;
 import frc.robot.constants.IdConstants;
+import frc.robot.constants.IdConstants.CANId;
 
-public class ClimberIoReal implements ClimberIO{
+public class ClimberIOReal{
 
-    private final sparkFlex LeftHangMotor = new sparkFlex(IdConstants.LeftHangMotor);
-
+    private final SparkFlex LeftHangMotor = new SparkFlex(CANId.LeftHangMotor, MotorType.kBrushless);
+    private final SparkFlex RightHangMotor = new SparkFlex(CANId.RightHangMotor, MotorType.kBrushless)
     @Override
-    public void updateInputs(ClimberioInputs){
-        inputs.LeftHangMotor = LeftHangMotor.get();
-    }
-
-    @Override
-    public void setLeftHangVoltage(double volts){LeftHangMotor.setVoltage(volts;)}
+    public void setVoltage(double volts){LeftHangMotor.setVoltage(volts); RightHangMotor.setVoltage(volts);}
 }
