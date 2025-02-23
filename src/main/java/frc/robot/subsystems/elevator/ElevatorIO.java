@@ -22,20 +22,20 @@ public interface ElevatorIO {
   @AutoLog
   class ElevatorIOInputs {
   // Status Signals
-  public StatusSignal<Angle> leftPositionRads;
-  public StatusSignal<AngularVelocity> leftVelocityRadsPerSec;
-  public StatusSignal<Voltage> leftAppliedVoltage;
-  public StatusSignal<Current> leftSupplyCurrentAmps;
-  public StatusSignal<Current> leftTorqueCurrentAmps;
-  public StatusSignal<Temperature> leftTempCelsius;
+  public double leftPositionRads;
+  public double leftVelocityRadsPerSec;
+  public double leftAppliedVoltage;
+  public double leftSupplyCurrentAmps;
+  public double leftTorqueCurrentAmps;
+  public double leftTempCelsius;
   public double leftPositionTicks; 
 
-  public StatusSignal<Angle> rightPositionRads;
-  public StatusSignal<AngularVelocity> rightVelocityRadsPerSec;
-  public StatusSignal<Voltage> rightAppliedVoltage;
-  public StatusSignal<Current> rightSupplyCurrentAmps;
-  public StatusSignal<Current> rightTorqueCurrentAmps;
-  public StatusSignal<Temperature> rightTempCelsius;
+  public double rightPositionRads;
+  public double rightVelocityRadsPerSec;
+  public double rightAppliedVoltage;
+  public double rightSupplyCurrentAmps;
+  public double rightTorqueCurrentAmps;
+  public double rightTempCelsius;
   public double rightPositionTicks; 
   }
 
