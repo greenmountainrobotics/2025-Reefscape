@@ -33,6 +33,7 @@ import frc.robot.subsystems.drive.module.ModuleIOTalonFX;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIOKraken;
 import frc.robot.subsystems.endEffector.EndEffector;
+import frc.robot.subsystems.endEffector.EndEffectorIOReal;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIOReal;
 import frc.robot.subsystems.vision.*;
@@ -84,6 +85,7 @@ public class RobotContainer {
         elevator = new Elevator(new ElevatorIOKraken());
         intake = new Intake(new IntakeIOReal());
         climber = new Climber(new ClimberIOReal());
+        endEffector = new EndEffector(new EndEffectorIOReal());
         break;
 
       case SIM:
@@ -146,12 +148,8 @@ public class RobotContainer {
         .onTrue(intake.setShooter(-1).andThen(intake.rotateDown()))
         .onFalse(intake.setShooter(0).andThen(intake.rotateUp()));
     // Elevator
-    controller2
-        .leftBumper()
-        .onTrue(
-            elevator.goToLevelFour()
-            // .andThen this should be the EndAffector
-            );
+    controller2.leftBumper().onTrue(elevator.goToLevelFour().andThen(endEffector.rotateUp()));
+    controller2.leftBumper().onTrue(elevator.goToGroundLevel().andThen(endEffector.rotateDown()));
 
     /*
         // Lock to 0° when A button is held
