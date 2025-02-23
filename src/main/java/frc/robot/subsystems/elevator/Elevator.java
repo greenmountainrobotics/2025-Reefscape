@@ -3,6 +3,7 @@ package frc.robot.subsystems.elevator;
 import static frc.robot.constants.ElevatorConstants.*;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.TunableConstants;
 import org.littletonrobotics.junction.Logger;
@@ -51,31 +52,31 @@ public class Elevator extends SubsystemBase {
     io.runVoltage(12 * pidOutput);
   }
 
-  public void goToLevelOne() {
-    setPosition(levelOne);
+  public InstantCommand goToLevelOne() {
+    return new InstantCommand(() -> setPosition(levelOne));
   }
 
-  public void goToLevelTwo() {
-    setPosition(levelTwo);
+  public InstantCommand goToLevelTwo() {
+    return new InstantCommand(() -> setPosition(levelTwo));
   }
 
-  public void goToLevelThree() {
-    setPosition(levelThree);
+  public InstantCommand goToLevelThree() {
+    return new InstantCommand(() -> setPosition(levelThree));
   }
 
-  public void goToLevelFour() {
-    setPosition(levelFour);
+  public InstantCommand goToLevelFour() {
+    return new InstantCommand(() -> setPosition(levelFour));
   }
 
-  public void goToGroundLevel() {
-    setPosition(levelGroundInches);
+  public InstantCommand goToGroundLevel() {
+    return new InstantCommand(() -> setPosition(levelGroundInches));
   }
 
-  public void goToBarge() {
-    setPosition(levelBarge);
+  public InstantCommand goToBarge() {
+    return new InstantCommand(() -> setPosition(levelBarge));
   }
 
-  public void goToCoralPickup() {
-    setPosition(levelPickup);
+  public InstantCommand goToCoralPickup() {
+    return new InstantCommand(() -> setPosition(levelPickup));
   }
 }

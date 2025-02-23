@@ -15,22 +15,26 @@ package frc.robot;
 
 import static frc.robot.constants.VisionConstants.*;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.constants.Constants;
 import frc.robot.constants.SwerveConstants;
+import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.climber.ClimberIOReal;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.imu.GyroIO;
 import frc.robot.subsystems.drive.imu.GyroIOPigeon2;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.drive.module.ModuleIOSim;
 import frc.robot.subsystems.drive.module.ModuleIOTalonFX;
+import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.ElevatorIOKraken;
+import frc.robot.subsystems.endEffector.EndEffector;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIOReal;
 import frc.robot.subsystems.vision.*;
 
 /**
@@ -43,7 +47,10 @@ public class RobotContainer {
   // Subsystems
   public Drive drive;
   public Vision vision;
-  // public  Elevator elevator;
+  public Elevator elevator;
+  public Intake intake;
+  public Climber climber;
+  public EndEffector endEffector;
   // private final AutoFactory autoFactory;
 
   // Controller
@@ -74,6 +81,9 @@ public class RobotContainer {
                     Camera.FrontLeftCamera.name, Camera.BackCamera.robotToCam)*/
 
                 );
+        elevator = new Elevator(new ElevatorIOKraken());
+        intake = new Intake(new IntakeIOReal());
+        climber = new Climber(new ClimberIOReal());
         break;
 
       case SIM:
@@ -121,6 +131,7 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
@@ -129,29 +140,44 @@ public class RobotContainer {
             () -> -controller1.getLeftX(),
             () -> -controller1.getRightX()));
 
-    // Lock to 0° when A button is held
-    controller1
-        .a()
-        .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                drive,
-                () -> -controller1.getLeftY(),
-                () -> -controller1.getLeftX(),
-                () -> new Rotation2d()));
-
-    // Switch to X pattern when X button is pressed
-    controller1.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-
-    // Reset gyro to 0° when B button is pressed
-    controller1
-        .b()
+    // Intake
+    controller2
+        .leftTrigger()
+        .onTrue(intake.setShooter(-1).andThen(intake.rotateDown()))
+        .onFalse(intake.setShooter(0).andThen(intake.rotateUp()));
+    // Elevator
+    controller2
+        .leftBumper()
         .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
-                    drive)
-                .ignoringDisable(true));
+            elevator.goToLevelFour()
+            // .andThen this should be the EndAffector
+            );
+
+    /*
+        // Lock to 0° when A button is held
+        controller1
+            .a()
+            .whileTrue(
+                DriveCommands.joystickDriveAtAngle(
+                    drive,
+                    () -> -controller1.getLeftY(),
+                    () -> -controller1.getLeftX(),
+                    () -> new Rotation2d()));
+
+        // Switch to X pattern when X button is pressed
+        controller1.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+
+        // Reset gyro to 0° when B button is pressed
+        controller1
+            .b()
+            .onTrue(
+                Commands.runOnce(
+                        () ->
+                            drive.setPose(
+                                new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+                        drive)
+                    .ignoringDisable(true));
+    */
   }
 
   /**

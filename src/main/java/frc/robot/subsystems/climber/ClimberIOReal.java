@@ -4,7 +4,7 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import frc.robot.constants.IdConstants.CANId;
 
-public class ClimberIOReal {
+public class ClimberIOReal implements ClimberIO {
 
   private final SparkFlex leftHangMotor = new SparkFlex(CANId.LeftHangMotor, MotorType.kBrushless);
   private final SparkFlex rightHangMotor =

@@ -2,7 +2,7 @@ package frc.robot.constants;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 
-public class IntakeConstants {
+public class EndEffectorConstants {
   // public static final double PivotHeight = inchesToMeters(8.369);
   // articulation is measured between extension and top side of end effector when retracted
   public static final Rotation2d DownRotation = Rotation2d.fromDegrees(-77);
@@ -21,7 +21,7 @@ public class IntakeConstants {
   public static final double ArticulationAcceleration = 0;
 
   public static final double IntakeSpeed = -0.5;
-  public static final double TransferSpeed = -0.5;
+  public static final double PlacementSpeed = -0.5;
 
   public static final Rotation2d AbsoluteEncoderOffset =
       Rotation2d.fromRadians(-1.635).unaryMinus();

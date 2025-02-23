@@ -4,7 +4,7 @@ import org.littletonrobotics.junction.AutoLog;
 
 public interface ClimberIO {
   @AutoLog
-  class ClimberioInputs {
+  class ClimberIOInputs {
     public double hangAppliedVolts = 0.0;
     public double currentDrawLeft = 0.0;
     public double currentDrawRight = 0.0;
@@ -12,7 +12,7 @@ public interface ClimberIO {
     public double encoderLeft = 0.0;
   }
 
-  default void updateInputs(ClimberioInputs inputs) {}
+  default void updateInputs(ClimberIOInputs inputs) {}
 
   default void hangSetVoltage(double voltage) {}
 }

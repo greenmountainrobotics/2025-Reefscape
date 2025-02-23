@@ -7,11 +7,14 @@ public final class IdConstants {
     public static final int LeftElevatorMotorId = 14; // Kwaken
     public static final int RightElevatorMotorId = 15; // Kwaken
 
-    public static final int IntakeRotateMotorId = 16; // Neo
-    public static final int IntakeSpinMotorId = 17; // 775
+    public static final int IntakeRotateMotorId = 16; // 775 (Spark Max Brushed)
+    public static final int IntakeSpinMotorId = 17; // Neo Vortex (Spark Flex)
 
-    public static final int LeftHangMotor = 18;
-    public static final int RightHangMotor = 19;
+    public static final int EndEffectorRotateMotorId = 18; // Neo (Spark Max Brushless)
+    public static final int EndEffectorSpinMotorId = 19; // 775 (Spark Max Brushed)
+
+    public static final int LeftHangMotor = 20;
+    public static final int RightHangMotor = 21;
   }
 
   public static final class DIOId {

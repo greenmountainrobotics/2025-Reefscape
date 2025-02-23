@@ -1,8 +1,8 @@
-package frc.robot.subsystems.intake;
+package frc.robot.subsystems.endEffector;
 
 import static edu.wpi.first.math.MathUtil.angleModulus;
 import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.constants.IntakeConstants.*;
+import static frc.robot.constants.EndEffectorConstants.*;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -16,9 +16,9 @@ import frc.robot.util.RunMode;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Intake extends SubsystemBase {
-  private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
-  private final IntakeIO io;
+public class EndEffector extends SubsystemBase {
+  private final EndEffectorIOInputsAutoLogged inputs = new EndEffectorIOInputsAutoLogged();
+  private final EndEffectorIO io;
 
   private final ProfiledPIDController articulationPID;
 
@@ -30,16 +30,16 @@ public class Intake extends SubsystemBase {
 
   private Rotation2d articulationSetpoint = UpRotation;
 
-  public Intake(IntakeIO io) {
+  public EndEffector(EndEffectorIO io) {
     this.io = io;
 
     switch (RunMode.getMode()) {
       case REAL, REPLAY -> {
         articulationPID =
             new ProfiledPIDController(
-                TunableConstants.KpIntakeArticulation,
-                TunableConstants.KiIntakeArticulation,
-                TunableConstants.KdIntakeArticulation,
+                TunableConstants.KpEndEffectorArticulation,
+                TunableConstants.KiEndEffectorArticulation,
+                TunableConstants.KdEndEffectorArticulation,
                 new TrapezoidProfile.Constraints(200, 100));
       }
       default -> {
@@ -63,11 +63,12 @@ public class Intake extends SubsystemBase {
   @Override
   public void periodic() {
     io.updateInputs(inputs);
-    Logger.processInputs("Intake", inputs);
-    Logger.recordOutput("Intake/SysIdState", sysIdState.toString());
-    Logger.recordOutput("Intake/ArticulationPositionRad", inputs.articulationPosition.getRadians());
+    Logger.processInputs("EndEffector", inputs);
+    Logger.recordOutput("EndEffector/SysIdState", sysIdState.toString());
     Logger.recordOutput(
-        "Intake/ArticulatinonVelocity",
+        "EndEffector/ArticulationPositionRad", inputs.articulationPosition.getRadians());
+    Logger.recordOutput(
+        "EndEffector/ArticulatinonVelocity",
         (inputs.articulationPosition.getRadians() - prevArticulation)
             / (Timer.getFPGATimestamp() - prevTimestamp));
     prevArticulation = inputs.articulationPosition.getRadians();
