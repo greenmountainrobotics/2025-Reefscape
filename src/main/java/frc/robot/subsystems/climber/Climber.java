@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Climber extends SubsystemBase {
   private final ClimberIO io;
-  public final ClimberIOInputsAutoLogged inputs = new ClimberIOInputsAutoLogged();
+  // public final ClimberIOInputsAutoLogged inputs = new ClimberIOInputsAutoLogged();
 
   public Climber(ClimberIO io) {
     this.io = io;
@@ -12,7 +12,7 @@ public class Climber extends SubsystemBase {
 
   @Override
   public void periodic() {
-    io.updateInputs(inputs);
+    // io.updateInputs(inputs);
   }
 
   public void setSpeed(double speed) {

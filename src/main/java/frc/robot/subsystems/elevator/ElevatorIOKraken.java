@@ -26,25 +26,9 @@ public class ElevatorIOKraken implements ElevatorIO {
   private final TalonFX elevatorLeft = new TalonFX(IdConstants.CANId.LeftElevatorMotorId);
   private final TalonFX elevatorRight = new TalonFX(IdConstants.CANId.RightElevatorMotorId);
 
-  // private final RelativeEncoder rightEncoder;
-  // private final RelativeEncoder leftEncoder;
-
   private final DigitalInput limitSwitch = new DigitalInput(IdConstants.DIOId.LimitSwitchId);
 
-  // Status Signals
-  private final StatusSignal<Angle> leftPositionRads;
-  private final StatusSignal<AngularVelocity> leftVelocityRadsPerSec;
-  private final StatusSignal<Voltage> leftAppliedVoltage;
-  private final StatusSignal<Current> leftSupplyCurrentAmps;
-  private final StatusSignal<Current> leftTorqueCurrentAmps;
-  private final StatusSignal<Temperature> leftTempCelsius;
 
-  private final StatusSignal<Angle> rightPositionRads;
-  private final StatusSignal<AngularVelocity> rightVelocityRadsPerSec;
-  private final StatusSignal<Voltage> rightAppliedVoltage;
-  private final StatusSignal<Current> rightSupplyCurrentAmps;
-  private final StatusSignal<Current> rightTorqueCurrentAmps;
-  private final StatusSignal<Temperature> rightTempCelsius;
 
   public ElevatorIOKraken() {
 
@@ -53,59 +37,49 @@ public class ElevatorIOKraken implements ElevatorIO {
     configLeft.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     configLeft.CurrentLimits.SupplyCurrentLimit = ElevatorConstants.currentLimitAmps;
     configLeft.CurrentLimits.SupplyCurrentLimitEnable = true;
-    elevatorLeft.getConfigurator().apply(configLeft);
 
     TalonFXConfiguration configRight = new TalonFXConfiguration();
     configRight.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     configRight.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     configRight.CurrentLimits.SupplyCurrentLimit = ElevatorConstants.currentLimitAmps;
     configRight.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    elevatorLeft.getConfigurator().apply(configLeft);
     elevatorRight.getConfigurator().apply(configRight);
 
-    leftPositionRads = elevatorLeft.getPosition();
-    leftVelocityRadsPerSec = elevatorLeft.getVelocity();
-    leftAppliedVoltage = elevatorLeft.getMotorVoltage();
-    leftSupplyCurrentAmps = elevatorLeft.getSupplyCurrent();
-    leftTorqueCurrentAmps = elevatorLeft.getTorqueCurrent();
-    leftTempCelsius = elevatorLeft.getDeviceTemp();
+    //Set Leader follower 
+    elevatorRight.setControl(new com.ctre.phoenix6.controls.Follower(IdConstants.CANId.LeftElevatorMotorId, true));
 
-    rightPositionRads = elevatorRight.getPosition();
-    rightVelocityRadsPerSec = elevatorRight.getVelocity();
-    rightAppliedVoltage = elevatorRight.getMotorVoltage();
-    rightSupplyCurrentAmps = elevatorRight.getSupplyCurrent();
-    rightTorqueCurrentAmps = elevatorRight.getTorqueCurrent();
-    rightTempCelsius = elevatorRight.getDeviceTemp();
-
-    //  rightEncoder = elevatorRight.getEncoder();
+    elevatorLeft.setPosition(0);
   }
 
-  // @Override
-  // public void updateInputs(ElevatorIO inputs) {
-  /*inputs.leftMotorConnected =
-      BaseStatusSignal.refreshAll(
-              leftPositionRads,
-              leftVelocityRadsPerSec,
-              leftAppliedVoltage,
-              leftSupplyCurrentAmps,
-              leftTorqueCurrentAmps,
-              leftTempCelsius)
-          .isOK();
+  @Override
+  public void updateInputs(ElevatorIOInputs inputs) {
+    inputs.leftPositionRads = elevatorLeft.getPosition();
+    inputs.leftVelocityRadsPerSec = elevatorLeft.getVelocity();
+    inputs.leftAppliedVoltage = elevatorLeft.getMotorVoltage();
+    inputs.leftSupplyCurrentAmps = elevatorLeft.getSupplyCurrent();
+    inputs.leftTorqueCurrentAmps = elevatorLeft.getTorqueCurrent();
+    inputs.leftTempCelsius = elevatorLeft.getDeviceTemp();
+    inputs.leftPositionTicks = elevatorLeft.getPosition().getValueAsDouble();
 
-  inputs.rightMotorConnected =
-  BaseStatusSignal.refreshAll(
-          rightPositionRads,
-          rightVelocityRadsPerSec,
-          rightAppliedVoltage,
-          rightSupplyCurrentAmps,
-          rightTorqueCurrentAmps,
-          rightTempCelsius)
-      .isOK();*/
 
-  //  }
+    inputs.rightPositionRads = elevatorRight.getPosition();
+    inputs.rightVelocityRadsPerSec = elevatorRight.getVelocity();
+    inputs.rightAppliedVoltage = elevatorRight.getMotorVoltage();
+    inputs.rightSupplyCurrentAmps = elevatorRight.getSupplyCurrent();
+    inputs.rightTorqueCurrentAmps = elevatorRight.getTorqueCurrent();
+    inputs.rightTempCelsius = elevatorRight.getDeviceTemp();
+    inputs.rightPositionTicks = elevatorLeft.getPosition().getValueAsDouble();
+
+
+
+  }
+
 
   @Override
-  public void runVoltage(double volts) {
-    elevatorLeft.setVoltage(volts);
+  public void runVoltage(double voltage) {
+    elevatorLeft.setVoltage(voltage);
   }
 
   @Override

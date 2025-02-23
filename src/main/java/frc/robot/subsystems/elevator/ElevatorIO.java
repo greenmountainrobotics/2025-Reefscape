@@ -9,30 +9,39 @@ package frc.robot.subsystems.elevator;
 
 import org.littletonrobotics.junction.AutoLog;
 
+import com.ctre.phoenix6.StatusSignal;
+
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
+import edu.wpi.first.units.measure.Voltage;
+
 public interface ElevatorIO {
 
   @AutoLog
   class ElevatorIOInputs {
-    public boolean leftMotorConnected = true;
-    public double leftPositionRads = 0.0;
-    public double leftVelocityRadsPerSec = 0.0;
-    public double leftAppliedVoltage = 0.0;
-    public double leftSupplyCurrentAmps = 0.0;
-    public double leftTorqueCurrentAmps = 0.0;
-    public double leftTempCelsius = 0.0;
+  // Status Signals
+  public StatusSignal<Angle> leftPositionRads;
+  public StatusSignal<AngularVelocity> leftVelocityRadsPerSec;
+  public StatusSignal<Voltage> leftAppliedVoltage;
+  public StatusSignal<Current> leftSupplyCurrentAmps;
+  public StatusSignal<Current> leftTorqueCurrentAmps;
+  public StatusSignal<Temperature> leftTempCelsius;
+  public double leftPositionTicks; 
 
-    public boolean rightMotorConnected = true;
-    public double rightPositionRads = 0.0;
-    public double rightVelocityRadsPerSec = 0.0;
-    public double rightAppliedVoltage = 0.0;
-    public double rightSupplyCurrentAmps = 0.0;
-    public double rightTorqueCurrentAmps = 0.0;
-    public double rightTempCelsius = 0.0;
+  public StatusSignal<Angle> rightPositionRads;
+  public StatusSignal<AngularVelocity> rightVelocityRadsPerSec;
+  public StatusSignal<Voltage> rightAppliedVoltage;
+  public StatusSignal<Current> rightSupplyCurrentAmps;
+  public StatusSignal<Current> rightTorqueCurrentAmps;
+  public StatusSignal<Temperature> rightTempCelsius;
+  public double rightPositionTicks; 
   }
 
   default void updateInputs(ElevatorIOInputs inputs) {}
 
-  default void runVoltage(double amps) {}
+  default void runVoltage(double volts) {}
 
   default void stop() {}
 
