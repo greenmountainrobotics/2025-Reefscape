@@ -55,21 +55,21 @@ public class ElevatorIOKraken implements ElevatorIO {
 
   @Override
   public void updateInputs(ElevatorIOInputs inputs) {
-    inputs.leftPositionRads = elevatorLeft.getPosition();
-    inputs.leftVelocityRadsPerSec = elevatorLeft.getVelocity();
-    inputs.leftAppliedVoltage = elevatorLeft.getMotorVoltage();
-    inputs.leftSupplyCurrentAmps = elevatorLeft.getSupplyCurrent();
-    inputs.leftTorqueCurrentAmps = elevatorLeft.getTorqueCurrent();
-    inputs.leftTempCelsius = elevatorLeft.getDeviceTemp();
+    inputs.leftPositionRads = elevatorLeft.getPosition().getValueAsDouble();
+    inputs.leftVelocityRadsPerSec = elevatorLeft.getVelocity().getValueAsDouble();
+    inputs.leftAppliedVoltage = elevatorLeft.getMotorVoltage().getValueAsDouble();
+    inputs.leftSupplyCurrentAmps = elevatorLeft.getSupplyCurrent().getValueAsDouble();
+    inputs.leftTorqueCurrentAmps = elevatorLeft.getTorqueCurrent().getValueAsDouble();
+    inputs.leftTempCelsius = elevatorLeft.getDeviceTemp().getValueAsDouble();
     inputs.leftPositionTicks = elevatorLeft.getPosition().getValueAsDouble();
 
 
-    inputs.rightPositionRads = elevatorRight.getPosition();
-    inputs.rightVelocityRadsPerSec = elevatorRight.getVelocity();
-    inputs.rightAppliedVoltage = elevatorRight.getMotorVoltage();
-    inputs.rightSupplyCurrentAmps = elevatorRight.getSupplyCurrent();
-    inputs.rightTorqueCurrentAmps = elevatorRight.getTorqueCurrent();
-    inputs.rightTempCelsius = elevatorRight.getDeviceTemp();
+    inputs.rightPositionRads = elevatorRight.getPosition().getValueAsDouble();
+    inputs.rightVelocityRadsPerSec = elevatorRight.getVelocity().getValueAsDouble();
+    inputs.rightAppliedVoltage = elevatorRight.getMotorVoltage().getValueAsDouble();
+    inputs.rightSupplyCurrentAmps = elevatorRight.getSupplyCurrent().getValueAsDouble();
+    inputs.rightTorqueCurrentAmps = elevatorRight.getTorqueCurrent().getValueAsDouble();
+    inputs.rightTempCelsius = elevatorRight.getDeviceTemp().getValueAsDouble();
     inputs.rightPositionTicks = elevatorLeft.getPosition().getValueAsDouble();
 
 
