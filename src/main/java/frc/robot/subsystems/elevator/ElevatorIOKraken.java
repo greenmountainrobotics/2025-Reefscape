@@ -7,16 +7,10 @@
 
 package frc.robot.subsystems.elevator;
 
-import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Temperature;
-import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.constants.ElevatorConstants;
 import frc.robot.constants.IdConstants;
@@ -27,8 +21,6 @@ public class ElevatorIOKraken implements ElevatorIO {
   private final TalonFX elevatorRight = new TalonFX(IdConstants.CANId.RightElevatorMotorId);
 
   private final DigitalInput limitSwitch = new DigitalInput(IdConstants.DIOId.LimitSwitchId);
-
-
 
   public ElevatorIOKraken() {
 
@@ -47,8 +39,9 @@ public class ElevatorIOKraken implements ElevatorIO {
     elevatorLeft.getConfigurator().apply(configLeft);
     elevatorRight.getConfigurator().apply(configRight);
 
-    //Set Leader follower 
-    elevatorRight.setControl(new com.ctre.phoenix6.controls.Follower(IdConstants.CANId.LeftElevatorMotorId, true));
+    // Set Leader follower
+    elevatorRight.setControl(
+        new com.ctre.phoenix6.controls.Follower(IdConstants.CANId.LeftElevatorMotorId, true));
 
     elevatorLeft.setPosition(0);
   }
@@ -63,7 +56,6 @@ public class ElevatorIOKraken implements ElevatorIO {
     inputs.leftTempCelsius = elevatorLeft.getDeviceTemp().getValueAsDouble();
     inputs.leftPositionTicks = elevatorLeft.getPosition().getValueAsDouble();
 
-
     inputs.rightPositionRads = elevatorRight.getPosition().getValueAsDouble();
     inputs.rightVelocityRadsPerSec = elevatorRight.getVelocity().getValueAsDouble();
     inputs.rightAppliedVoltage = elevatorRight.getMotorVoltage().getValueAsDouble();
@@ -71,11 +63,7 @@ public class ElevatorIOKraken implements ElevatorIO {
     inputs.rightTorqueCurrentAmps = elevatorRight.getTorqueCurrent().getValueAsDouble();
     inputs.rightTempCelsius = elevatorRight.getDeviceTemp().getValueAsDouble();
     inputs.rightPositionTicks = elevatorLeft.getPosition().getValueAsDouble();
-
-
-
   }
-
 
   @Override
   public void runVoltage(double voltage) {

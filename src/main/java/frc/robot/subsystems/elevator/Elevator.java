@@ -1,33 +1,25 @@
 package frc.robot.subsystems.elevator;
 
+import static frc.robot.constants.ElevatorConstants.*;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Temperature;
-import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.TunableConstants;
 import org.littletonrobotics.junction.Logger;
-
-import com.ctre.phoenix6.StatusSignal;
-
-import static frc.robot.constants.ElevatorConstants.*;
 
 public class Elevator extends SubsystemBase {
   private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
   private final ElevatorIO io;
 
   private final PIDController elevatorPID;
-  private double targetPositionInches = 0; 
-
-
+  private double targetPositionInches = 0;
 
   public Elevator(ElevatorIO io) {
     this.io = io;
 
-    elevatorPID = new PIDController(TunableConstants.KpElevator, TunableConstants.KiElevator, TunableConstants.KdElevator);
+    elevatorPID =
+        new PIDController(
+            TunableConstants.KpElevator, TunableConstants.KiElevator, TunableConstants.KdElevator);
     elevatorPID.setTolerance(100);
   }
 
@@ -50,40 +42,40 @@ public class Elevator extends SubsystemBase {
     Logger.recordOutput("Elevator/rightSupplyCurrentAmps", inputs.rightSupplyCurrentAmps);
     Logger.recordOutput("Elevator/rightTempCelsius", inputs.rightTempCelsius);
     Logger.recordOutput("Elevator/rightPositionTicks", inputs.rightPositionTicks);
-
   }
 
   public void setPosition(double targetPositionInches) {
     this.targetPositionInches = targetPositionInches;
-    double pidOutput = elevatorPID.calculate(inputs.leftPositionTicks, targetPositionInches*ticksPerInch);
-    inputs.setVoltage(12*pidOutput);
+    double pidOutput =
+        elevatorPID.calculate(inputs.leftPositionTicks, targetPositionInches * ticksPerInch);
+    io.runVoltage(12 * pidOutput);
   }
 
-  public void goToLevelOne(){
+  public void goToLevelOne() {
     setPosition(levelOne);
   }
 
-  public void goToLevelTwo(){
+  public void goToLevelTwo() {
     setPosition(levelTwo);
   }
 
-  public void goToLevelThree(){
+  public void goToLevelThree() {
     setPosition(levelThree);
   }
 
-  public void goToLevelFour(){
+  public void goToLevelFour() {
     setPosition(levelFour);
   }
 
-  public void goToGroundLevel(){
+  public void goToGroundLevel() {
     setPosition(levelGroundInches);
   }
 
-  public void goToBarge(){
+  public void goToBarge() {
     setPosition(levelBarge);
   }
 
-  public void goToCoralPickup(){
+  public void goToCoralPickup() {
     setPosition(levelPickup);
   }
 }

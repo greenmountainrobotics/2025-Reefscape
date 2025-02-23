@@ -9,34 +9,26 @@ package frc.robot.subsystems.elevator;
 
 import org.littletonrobotics.junction.AutoLog;
 
-import com.ctre.phoenix6.StatusSignal;
-
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Temperature;
-import edu.wpi.first.units.measure.Voltage;
-
 public interface ElevatorIO {
 
   @AutoLog
   class ElevatorIOInputs {
-  // Status Signals
-  public double leftPositionRads;
-  public double leftVelocityRadsPerSec;
-  public double leftAppliedVoltage;
-  public double leftSupplyCurrentAmps;
-  public double leftTorqueCurrentAmps;
-  public double leftTempCelsius;
-  public double leftPositionTicks; 
+    // Status Signals
+    public double leftPositionRads;
+    public double leftVelocityRadsPerSec;
+    public double leftAppliedVoltage;
+    public double leftSupplyCurrentAmps;
+    public double leftTorqueCurrentAmps;
+    public double leftTempCelsius;
+    public double leftPositionTicks;
 
-  public double rightPositionRads;
-  public double rightVelocityRadsPerSec;
-  public double rightAppliedVoltage;
-  public double rightSupplyCurrentAmps;
-  public double rightTorqueCurrentAmps;
-  public double rightTempCelsius;
-  public double rightPositionTicks; 
+    public double rightPositionRads;
+    public double rightVelocityRadsPerSec;
+    public double rightAppliedVoltage;
+    public double rightSupplyCurrentAmps;
+    public double rightTorqueCurrentAmps;
+    public double rightTempCelsius;
+    public double rightPositionTicks;
   }
 
   default void updateInputs(ElevatorIOInputs inputs) {}
