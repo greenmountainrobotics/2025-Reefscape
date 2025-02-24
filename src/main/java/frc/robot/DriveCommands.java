@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 
-package frc.robot.commands;
+package frc.robot;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -28,7 +28,13 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import frc.robot.constants.DriveConstants;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.endEffector.EndEffector;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -61,6 +67,17 @@ public class DriveCommands {
     return new Pose2d(new Translation2d(), linearDirection)
         .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
         .getTranslation();
+  }
+
+  public static Command PlaceOnReef(
+      Elevator elevator, Drive drive, EndEffector endEffector, boolean align) {
+    return new ConditionalCommand(
+            new WaitUntilCommand(
+                () -> drive.closestFace() < DriveConstants.ReefPlacingDistance + 0.2),
+            new InstantCommand(() -> {}),
+            () -> align)
+        .alongWith(
+            new ConditionalCommand(drive.alignToReef(), new InstantCommand(() -> {}), () -> align));
   }
 
   /**

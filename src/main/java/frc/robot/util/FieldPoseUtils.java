@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 public class FieldPoseUtils {
   public static Pose2d flipPose(Pose2d pose) {
     return new Pose2d(
-        FieldWidth - pose.getX(),
+        fieldWidth - pose.getX(),
         pose.getY(),
         pose.getRotation().plus(Rotation2d.fromDegrees(180)).times(-1));
   }
@@ -22,7 +22,7 @@ public class FieldPoseUtils {
 
   public static Supplier<Pose2d> flipPoseIfRed(Supplier<Pose2d> pose) {
     if (MyAlliance.isRed()) {
-      return flipPose(pose, FieldWidth);
+      return flipPose(pose, fieldWidth);
     } else {
       return pose;
     }
@@ -40,7 +40,7 @@ public class FieldPoseUtils {
   }
 
   public static Translation2d flipTranslation(Translation2d translation) {
-    return new Translation2d(FieldWidth - translation.getX(), translation.getY());
+    return new Translation2d(fieldWidth - translation.getX(), translation.getY());
   }
 
   public static Translation2d flipTranslationIfRed(Translation2d translation) {

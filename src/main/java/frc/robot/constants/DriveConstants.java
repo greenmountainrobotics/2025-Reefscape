@@ -8,6 +8,8 @@ public final class DriveConstants {
   public static final double WidthWithBumpersY = inchesToMeters(30.875); // Not Updated
   public static final double WidthWithBumpersX = inchesToMeters(30.875); // Not Updated
 
+  public static final double ReefPlacingDistance = 1.0;
+
   // Gear ratios for SDS MK4i L3
   public static final double DriveGearRatio =
       (50.0 / 14.0) * (16.0 / 28.0) * (45.0 / 15.0); // Not Updated

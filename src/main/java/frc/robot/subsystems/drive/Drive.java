@@ -55,12 +55,15 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.Constants;
 import frc.robot.constants.Constants.Mode;
 import frc.robot.constants.DriveConstants;
+import frc.robot.constants.FieldConstants;
 import frc.robot.constants.SwerveConstants;
 import frc.robot.subsystems.drive.imu.GyroIO;
 import frc.robot.subsystems.drive.imu.GyroIOInputsAutoLogged;
 import frc.robot.subsystems.drive.module.Module;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.leds.Leds;
+import frc.robot.util.FieldPoseUtils;
+import frc.robot.util.MyAlliance;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -438,6 +441,34 @@ public class Drive extends SubsystemBase {
     return getPose().getTranslation().getDistance(point);
   }
 
+  public int closestFace(Translation2d point) {
+    double minDistance = 10000.0;
+
+    if (distanceFromPoint(FieldConstants.FaceOne) < minDistance) {
+      minDistance = distanceFromPoint(FieldConstants.FaceOne);
+    }
+
+    if (distanceFromPoint(FieldConstants.FaceTwo) < minDistance) {
+      minDistance = distanceFromPoint(FieldConstants.FaceTwo);
+    }
+
+    if (distanceFromPoint(FieldConstants.FaceThree) < minDistance) {
+      minDistance = distanceFromPoint(FieldConstants.FaceThree);
+    }
+
+    if (distanceFromPoint(FieldConstants.FaceFour) < minDistance) {
+      minDistance = distanceFromPoint(FieldConstants.FaceFour);
+    }
+
+    if (distanceFromPoint(FieldConstants.FaceFive) < minDistance) {
+      minDistance = distanceFromPoint(FieldConstants.FaceFive);
+    }
+
+    if (distanceFromPoint(FieldConstants.FaceSix) < minDistance) {
+      minDistance = distanceFromPoint(FieldConstants.FaceSix);
+    }
+  }
+
   public Command runToPose(Supplier<Pose2d> targetPoseSupplier, boolean stop) {
     return new InstantCommand(() -> Leds.State.DrivingToPose = true)
         .andThen(
@@ -553,12 +584,13 @@ public class Drive extends SubsystemBase {
 
   public enum DriveState {
     NONE,
-    ALIGNING_TO_SPEAKER,
-    ALIGNING_TO_AMP
+    ALIGNING_TO_REEF,
+    ALIGNING_TO_BARGE,
+    ALIGNING_TO_INTAKE
   }
 
-  /*public Command alignToSpeaker() {
-    return new InstantCommand(() -> setState(DriveState.ALIGNING_TO_SPEAKER))
+  public Command alignToReef() {
+    return new InstantCommand(() -> setState(DriveState.ALIGNING_TO_REEF))
         .andThen(
             new DeferredCommand(
                 () -> {
@@ -598,7 +630,7 @@ public class Drive extends SubsystemBase {
                           targetTranslation.getX(),
                           targetTranslation.getY(),
                           FieldPoseUtils.flipTranslationIfRed(FieldConstants.SpeakerCloseSideCenter)
-                              .minus(targetTranslation)
+                              .minus((Translation2d) targetTranslation)
                               .getAngle()
                               .minus(Rotation2d.fromRadians(Math.PI)));
 
@@ -606,7 +638,7 @@ public class Drive extends SubsystemBase {
                 },
                 Set.of(this)))
         .finallyDo(() -> setState(DriveState.NONE));
-  }*/
+  }
 
   /*public Command alignToNote(Translation2d noteTranslation) {
     return new DeferredCommand(

@@ -13,13 +13,13 @@
 
 package frc.robot;
 
+import static frc.robot.DriveCommands.*;
 import static frc.robot.constants.VisionConstants.*;
 
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.DriveCommands;
 import frc.robot.constants.Constants;
 import frc.robot.constants.SwerveConstants;
 import frc.robot.subsystems.climber.Climber;
@@ -136,7 +136,7 @@ public class RobotContainer {
 
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
-        DriveCommands.joystickDrive(
+        joystickDrive(
             drive,
             () -> -controller1.getLeftY(),
             () -> -controller1.getLeftX(),
