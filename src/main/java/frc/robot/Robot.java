@@ -14,6 +14,10 @@
 package frc.robot;
 
 import choreo.Choreo;
+import choreo.auto.AutoChooser;
+import choreo.auto.AutoFactory;
+import choreo.auto.AutoRoutine;
+import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -21,8 +25,11 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants.DriveMotorArrangement;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerMotorArrangement;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.constants.BuildConstants;
 import frc.robot.constants.Constants;
 import frc.robot.constants.SwerveConstants;
@@ -30,6 +37,7 @@ import java.util.Optional;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
@@ -43,109 +51,126 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
-  private final Optional<Trajectory<SwerveSample>> trajectory =
-      Choreo.loadTrajectory("myTrajectory");
-  private final Timer timer = new Timer();
+  private AutoFactory autoFactory;
+  private AutoChooser autoChooser;
 
-  public Robot() {
-    // Record metadata
-    Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
-    Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
-    Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
-    Logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
-    Logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
-    switch (BuildConstants.DIRTY) {
-      case 0:
-        Logger.recordMetadata("GitDirty", "All changes committed");
-        break;
-      case 1:
-        Logger.recordMetadata("GitDirty", "Uncomitted changes");
-        break;
-      default:
-        Logger.recordMetadata("GitDirty", "Unknown");
-        break;
-    }
-
-    // Set up data receivers & replay source
-    switch (Constants.currentMode) {
-      case REAL:
-        // Running on a real robot, log to a USB stick ("/U/logs")
-        Logger.addDataReceiver(new WPILOGWriter());
-        Logger.addDataReceiver(new NT4Publisher());
-        break;
-
-      case SIM:
-        // Running a physics simulator, log to NT
-        Logger.addDataReceiver(new NT4Publisher());
-        break;
-
-      case REPLAY:
-        // Replaying a log, set up replay source
-        setUseTiming(false); // Run as fast as possible
-        String logPath = LogFileUtil.findReplayLog();
-        Logger.setReplaySource(new WPILOGReader(logPath));
-        Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
-        break;
-    }
-
-    // Start AdvantageKit logger
-    Logger.start();
-
-    // Check for valid swerve config
-    var modules =
-        new SwerveModuleConstants[] {
-          SwerveConstants.FrontLeft,
-          SwerveConstants.FrontRight,
-          SwerveConstants.BackLeft,
-          SwerveConstants.BackRight
-        };
-    for (var constants : modules) {
-      if (constants.DriveMotorType != DriveMotorArrangement.TalonFX_Integrated
-          || constants.SteerMotorType != SteerMotorArrangement.TalonFX_Integrated) {
-        throw new RuntimeException(
-            "You are using an unsupported swerve configuration, which this template does not support without manual customization. The 2025 release of Phoenix supports some swerve configurations which were not available during 2025 beta testing, preventing any development and support from the AdvantageKit developers.");
+    private final Optional<Trajectory<SwerveSample>> trajectory =
+        Choreo.loadTrajectory("myTrajectory");
+    private final Timer timer = new Timer();
+  
+    public Robot() {
+      // Record metadata
+      Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
+      Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
+      Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
+      Logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
+      Logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
+      switch (BuildConstants.DIRTY) {
+        case 0:
+          Logger.recordMetadata("GitDirty", "All changes committed");
+          break;
+        case 1:
+          Logger.recordMetadata("GitDirty", "Uncomitted changes");
+          break;
+        default:
+          Logger.recordMetadata("GitDirty", "Unknown");
+          break;
       }
+  
+      // Set up data receivers & replay source
+      switch (Constants.currentMode) {
+        case REAL:
+          // Running on a real robot, log to a USB stick ("/U/logs")
+          Logger.addDataReceiver(new WPILOGWriter());
+          Logger.addDataReceiver(new NT4Publisher());
+          break;
+  
+        case SIM:
+          // Running a physics simulator, log to NT
+          Logger.addDataReceiver(new NT4Publisher());
+          break;
+  
+        case REPLAY:
+          // Replaying a log, set up replay source
+          setUseTiming(false); // Run as fast as possible
+          String logPath = LogFileUtil.findReplayLog();
+          Logger.setReplaySource(new WPILOGReader(logPath));
+          Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+          break;
+      }
+  
+      // Start AdvantageKit logger
+      Logger.start();
+  
+      // Check for valid swerve config
+      var modules =
+          new SwerveModuleConstants[] {
+            SwerveConstants.FrontLeft,
+            SwerveConstants.FrontRight,
+            SwerveConstants.BackLeft,
+            SwerveConstants.BackRight
+          };
+      for (var constants : modules) {
+        if (constants.DriveMotorType != DriveMotorArrangement.TalonFX_Integrated
+            || constants.SteerMotorType != SteerMotorArrangement.TalonFX_Integrated) {
+          throw new RuntimeException(
+              "You are using an unsupported swerve configuration, which this template does not support without manual customization. The 2025 release of Phoenix supports some swerve configurations which were not available during 2025 beta testing, preventing any development and support from the AdvantageKit developers.");
+        }
+      }
+  
+      // Instantiate our RobotContainer. This will perform all our button bindings,
+      // and put our autonomous chooser on the dashboard.
+      robotContainer = new RobotContainer();
     }
+  
+    /** This function is called periodically during all modes. */
+    @Override
+    public void robotPeriodic() {
+      // Switch thread to high priority to improve loop timing
+      Threads.setCurrentThreadPriority(true, 99);
+  
+      // Runs the Scheduler. This is responsible for polling buttons, adding
+      // newly-scheduled commands, running already-scheduled commands, removing
+      // finished or interrupted commands, and running subsystem periodic() methods.
+      // This must be called from the robot's periodic block in order for anything in
+      // the Command-based framework to work.
+      CommandScheduler.getInstance().run();
+  
+      // Return to normal thread priority
+      Threads.setCurrentThreadPriority(false, 10);
+    }
+  
+    /** This function is called once when the robot is disabled. */
+    @Override
+    public void disabledInit() {}
+  
+    /** This function is called periodically when disabled. */
+    @Override
+    public void disabledPeriodic() {}
+  
+    /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
+    @Override
+    public void autonomousInit() {
+      // Create the auto chooser
+      autoChooser = new AutoChooser();
 
-    // Instantiate our RobotContainer. This will perform all our button bindings,
-    // and put our autonomous chooser on the dashboard.
-    robotContainer = new RobotContainer();
-  }
+      // Add options to the chooser
+      autoChooser.addRoutine("Auto Left", this::autoLeft);
 
-  /** This function is called periodically during all modes. */
-  @Override
-  public void robotPeriodic() {
-    // Switch thread to high priority to improve loop timing
-    Threads.setCurrentThreadPriority(true, 99);
+      // Put the auto chooser on the dashboard
+      SmartDashboard.putData(autoChooser);
 
-    // Runs the Scheduler. This is responsible for polling buttons, adding
-    // newly-scheduled commands, running already-scheduled commands, removing
-    // finished or interrupted commands, and running subsystem periodic() methods.
-    // This must be called from the robot's periodic block in order for anything in
-    // the Command-based framework to work.
-    CommandScheduler.getInstance().run();
+      // Schedule the selected auto during the autonomous period
+      RobotModeTriggers.autonomous().whileTrue(autoChooser.selectedCommandScheduler());
 
-    // Return to normal thread priority
-    Threads.setCurrentThreadPriority(false, 10);
-  }
 
-  /** This function is called once when the robot is disabled. */
-  @Override
-  public void disabledInit() {}
-
-  /** This function is called periodically when disabled. */
-  @Override
-  public void disabledPeriodic() {}
-
-  /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
-  @Override
-  public void autonomousInit() {
-    autonomousCommand = robotContainer.getAutonomousCommand();
+    //autonomousCommand = robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)
-    if (autonomousCommand != null) {
+    /*if (autonomousCommand != null) {
       autonomousCommand.schedule();
-    }
+    }*/
+
   }
 
   /** This function is called periodically during autonomous. */
@@ -186,4 +211,36 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {}
+
+  private AutoRoutine autoLeft() {
+    AutoRoutine routine = autoFactory.newRoutine("AutoLeft");
+    AutoTrajectory pickupTraj = routine.trajectory("pickupGamepiece");
+    AutoTrajectory scoreTraj = routine.trajectory("scoreGamepiece");
+
+     // When the routine begins, reset odometry and start the first trajectory 
+    routine.active().onTrue(
+        Commands.sequence(
+            pickupTraj.resetOdometry(),
+            pickupTraj.cmd()
+        )
+    );
+
+    // Starting at the event marker named "intake", run the intake 
+   // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
+
+    // When the trajectory is done, start the next trajectory
+    pickupTraj.done().onTrue(scoreTraj.cmd());
+
+    // While the trajectory is active, prepare the scoring subsystem
+    //scoreTraj.active().whileTrue(scoringSubsystem.getReady());
+
+    // When the trajectory is done, score
+   // scoreTraj.done().onTrue(scoringSubsystem.score());
+
+    return routine;
+  }
+
+ 
 }
+
+

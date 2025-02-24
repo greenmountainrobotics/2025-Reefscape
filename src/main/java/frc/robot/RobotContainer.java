@@ -16,6 +16,7 @@ package frc.robot;
 import static frc.robot.DriveCommands.*;
 import static frc.robot.constants.VisionConstants.*;
 
+import choreo.auto.AutoFactory;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -52,7 +53,7 @@ public class RobotContainer {
   public Intake intake;
   public Climber climber;
   public EndEffector endEffector;
-  // private final AutoFactory autoFactory;
+  public AutoFactory autoFactory;
 
   // Controller
   private final CommandXboxController controller1 = new CommandXboxController(0);
@@ -86,6 +87,7 @@ public class RobotContainer {
         intake = new Intake(new IntakeIOReal());
         climber = new Climber(new ClimberIOReal());
         endEffector = new EndEffector(new EndEffectorIOReal());
+        autoFactory = new AutoFactory(drive::getPose, drive::setPose, drive::followTrajectory, false, drive)
         break;
 
       case SIM:
@@ -151,6 +153,8 @@ public class RobotContainer {
     controller2.leftBumper().onTrue(elevator.goToLevelFour().andThen(endEffector.rotateUp()));
     controller2.leftBumper().onTrue(elevator.goToGroundLevel().andThen(endEffector.rotateDown()));
 
+    controller2.a().whileTrue(
+            PlaceOnReef(elevator, drive, endEffector, false));
     /*
         // Lock to 0° when A button is held
         controller1
