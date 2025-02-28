@@ -28,13 +28,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import frc.robot.constants.DriveConstants;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.elevator.Elevator;
-import frc.robot.subsystems.endEffector.EndEffector;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -69,7 +63,7 @@ public class DriveCommands {
         .getTranslation();
   }
 
-  public static Command PlaceOnReef(
+  /*  public static Command PlaceOnReef(
       Elevator elevator, Drive drive, EndEffector endEffector, boolean align) {
     return new ConditionalCommand(
             new WaitUntilCommand(
@@ -78,7 +72,7 @@ public class DriveCommands {
             () -> align)
         .alongWith(
             new ConditionalCommand(drive.alignToReef(), new InstantCommand(() -> {}), () -> align));
-  }
+  }*/
 
   /**
    * Field relative drive command using two joysticks (controlling linear and angular velocities).

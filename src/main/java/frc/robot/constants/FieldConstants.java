@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file at
 // the root directory of this project.
 
-package org.littletonrobotics.frc2025;
+package frc.robot.constants;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -189,7 +189,7 @@ public class FieldConstants {
     FIELD_BORDER("2025-field-border");
 
     AprilTagLayoutType(String name) {
-      if (Constants.disableHAL) {
+      if (false) {
         layout = null;
       } else {
         try {

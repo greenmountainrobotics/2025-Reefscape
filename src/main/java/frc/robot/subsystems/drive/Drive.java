@@ -55,15 +55,12 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.Constants;
 import frc.robot.constants.Constants.Mode;
 import frc.robot.constants.DriveConstants;
-import frc.robot.constants.FieldConstants;
 import frc.robot.constants.SwerveConstants;
 import frc.robot.subsystems.drive.imu.GyroIO;
 import frc.robot.subsystems.drive.imu.GyroIOInputsAutoLogged;
 import frc.robot.subsystems.drive.module.Module;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.leds.Leds;
-import frc.robot.util.FieldPoseUtils;
-import frc.robot.util.MyAlliance;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -441,33 +438,9 @@ public class Drive extends SubsystemBase {
     return getPose().getTranslation().getDistance(point);
   }
 
-  public int closestFace(Translation2d point) {
-    double minDistance = 10000.0;
+  /*public int closestFace(Translation2d point) {
 
-    if (distanceFromPoint(FieldConstants.FaceOne) < minDistance) {
-      minDistance = distanceFromPoint(FieldConstants.FaceOne);
-    }
-
-    if (distanceFromPoint(FieldConstants.FaceTwo) < minDistance) {
-      minDistance = distanceFromPoint(FieldConstants.FaceTwo);
-    }
-
-    if (distanceFromPoint(FieldConstants.FaceThree) < minDistance) {
-      minDistance = distanceFromPoint(FieldConstants.FaceThree);
-    }
-
-    if (distanceFromPoint(FieldConstants.FaceFour) < minDistance) {
-      minDistance = distanceFromPoint(FieldConstants.FaceFour);
-    }
-
-    if (distanceFromPoint(FieldConstants.FaceFive) < minDistance) {
-      minDistance = distanceFromPoint(FieldConstants.FaceFive);
-    }
-
-    if (distanceFromPoint(FieldConstants.FaceSix) < minDistance) {
-      minDistance = distanceFromPoint(FieldConstants.FaceSix);
-    }
-  }
+  }*/
 
   public Command runToPose(Supplier<Pose2d> targetPoseSupplier, boolean stop) {
     return new InstantCommand(() -> Leds.State.DrivingToPose = true)
@@ -589,7 +562,7 @@ public class Drive extends SubsystemBase {
     ALIGNING_TO_INTAKE
   }
 
-  public Command alignToReef() {
+  /*public Command alignToReef() {
     return new InstantCommand(() -> setState(DriveState.ALIGNING_TO_REEF))
         .andThen(
             new DeferredCommand(
@@ -638,7 +611,7 @@ public class Drive extends SubsystemBase {
                 },
                 Set.of(this)))
         .finallyDo(() -> setState(DriveState.NONE));
-  }
+  }*/
 
   /*public Command alignToNote(Translation2d noteTranslation) {
     return new DeferredCommand(

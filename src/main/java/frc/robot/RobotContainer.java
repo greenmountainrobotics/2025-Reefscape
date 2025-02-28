@@ -16,24 +16,19 @@ package frc.robot;
 import static frc.robot.DriveCommands.*;
 import static frc.robot.constants.VisionConstants.*;
 
-import choreo.auto.AutoFactory;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.constants.Constants;
-import frc.robot.constants.EndEffectorConstants;
 import frc.robot.constants.SwerveConstants;
-import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.imu.GyroIO;
 import frc.robot.subsystems.drive.imu.GyroIOPigeon2;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.drive.module.ModuleIOSim;
 import frc.robot.subsystems.drive.module.ModuleIOTalonFX;
-import frc.robot.subsystems.elevator.Elevator;
-import frc.robot.subsystems.endEffector.EndEffector;
-import frc.robot.subsystems.endEffector.EndEffectorIOReal;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIOReal;
 import frc.robot.subsystems.vision.*;
 
 /**
@@ -46,11 +41,11 @@ public class RobotContainer {
   // Subsystems
   public Drive drive;
   public Vision vision;
-  public Elevator elevator;
+  // public Elevator elevator;
   public Intake intake;
-  public Climber climber;
-  public EndEffector endEffector;
-  public AutoFactory autoFactory;
+  // public Climber climber;
+  // public EndEffector endEffector;
+  // public AutoFactory autoFactory;
 
   // Controller
   private final CommandXboxController controller1 = new CommandXboxController(0);
@@ -81,9 +76,9 @@ public class RobotContainer {
 
                 );
         //  elevator = new Elevator(new ElevatorIOKraken());
-        // intake = new Intake(new IntakeIOReal());
+        intake = new Intake(new IntakeIOReal());
         // climber = new Climber(new ClimberIOReal());
-        endEffector = new EndEffector(new EndEffectorIOReal());
+        // endEffector = new EndEffector(new EndEffectorIOReal());
         //  autoFactory = new AutoFactory(drive::getPose, drive::setPose, drive::followTrajectory,
         // false, drive);
         break;
@@ -149,7 +144,7 @@ public class RobotContainer {
         .onFalse(intake.setShooter(0).andThen(intake.rotateUp()));
     // Elevator
     // Ground Intake
-    controller2
+    /*    controller2
         .rightTrigger()
         .onTrue(
             elevator
@@ -158,9 +153,9 @@ public class RobotContainer {
                 .alongWith(endEffector.setShooter(EndEffectorConstants.IntakeSpeed)))
         .onFalse(endEffector.setShooter(0.0).alongWith(endEffector.rotateUp()));
 
-    controller2.leftBumper().onTrue(elevator.goToLevelFour().andThen(endEffector.rotateUp()));
+    controller2.leftBumper().onTrue(elevator.goToLevelFour().andThen(endEffector.rotateUp()));*/
 
-    controller2.a().whileTrue(PlaceOnReef(elevator, drive, endEffector, false));
+    // controller2.a().whileTrue(PlaceOnReef(elevator, drive, endEffector, false));
     /*
         // Lock to 0° when A button is held
         controller1
