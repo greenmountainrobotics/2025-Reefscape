@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 package frc.robot.subsystems.elevator;
 
 import static frc.robot.constants.ElevatorConstants.*;
@@ -10,6 +11,45 @@ import org.littletonrobotics.junction.Logger;
 
 public class Elevator extends SubsystemBase {
   private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
+=======
+// Copyright (c) 2024 FRC 6328
+// http://github.com/Mechanical-Advantage
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project. jhgjh
+
+package frc.robot.subsystems.elevator;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
+
+
+
+public abstract class Elevator<G extends Elevator.SlamElevatorGoal> {
+
+  public interface SlamElevatorGoal {
+    DoubleSupplier getSlammingCurrent();
+
+    boolean isStopAtGoal();
+
+    default boolean isNonSensing() {
+      return false;
+    }
+
+    SlamElevatorState getState();
+  }
+
+  public enum SlamElevatorState {
+    IDLING,
+    RETRACTING,
+    EXTENDING
+  }
+
+>>>>>>> Stashed changes
   private final ElevatorIO io;
 
   private final PIDController elevatorPID;
@@ -37,12 +77,72 @@ public class Elevator extends SubsystemBase {
     Logger.recordOutput("Elevator/leftTempCelsius", inputs.leftTempCelsius);
     Logger.recordOutput("Elevator/leftPositionTicks", inputs.leftPositionTicks);
 
+<<<<<<< Updated upstream
     Logger.recordOutput("Elevator/rightPositionRads", inputs.rightPositionRads);
     Logger.recordOutput("Elevator/rightVelocityRadsPerSec", inputs.rightVelocityRadsPerSec);
     Logger.recordOutput("Elevator/rightAppliedVoltage", inputs.rightAppliedVoltage);
     Logger.recordOutput("Elevator/rightSupplyCurrentAmps", inputs.rightSupplyCurrentAmps);
     Logger.recordOutput("Elevator/rightTempCelsius", inputs.rightTempCelsius);
     Logger.recordOutput("Elevator/rightPositionTicks", inputs.rightPositionTicks);
+=======
+    // Reset if changing goals
+    if (lastGoal != null && getGoal() != lastGoal) {
+      atGoal = false;
+      staticTimer.stop();
+      staticTimer.reset();
+    }
+    // Set last goal
+    lastGoal = getGoal();
+
+    // Set alert
+    // disconnected.set(!inputs.motorConnected);
+
+    // Check if at goal.
+    
+    if (!atGoal) {
+      // Start static timer if within min velocity threshold.
+      if (getGoal().isNonSensing() || Math.abs(inputs.velocityRadsPerSec) <= minVelocityThresh) {
+        staticTimer.start();
+      } else {
+        staticTimer.stop();
+        staticTimer.reset();
+      }
+      // If we are finished with timer, finish goal.
+      // Also assume we are at the goal if auto was started
+      atGoal = staticTimer.hasElapsed(staticTimeSecs) || DriverStation.isAutonomousEnabled();
+    } else {
+      staticTimer.stop();
+      staticTimer.reset();
+    }
+
+    // Run to goal.
+    if (!atGoal) {
+      io.runCurrent(getGoal().getSlammingCurrent().getAsDouble());
+    } else {
+      if (getGoal().isStopAtGoal()) {
+        io.stop();
+      } else {
+        io.runCurrent(getGoal().getSlammingCurrent().getAsDouble());
+      }
+    }
+
+    if (DriverStation.isDisabled()) {
+      // Reset
+      io.stop();
+      lastGoal = null;
+      staticTimer.stop();
+      staticTimer.reset();
+      if (Math.abs(inputs.velocityRadsPerSec) > minVelocityThresh) {
+        // If we don't move when disabled, assume we are still at goal
+        atGoal = false;
+      }
+    }
+
+    // Update coast mode
+    setBrakeMode(!coastModeSupplier.getAsBoolean());
+
+    Logger.recordOutput("Superstructure/" + name + "/Goal", getGoal().toString());
+>>>>>>> Stashed changes
   }
 
   public void setPosition(double targetPositionInches) {
