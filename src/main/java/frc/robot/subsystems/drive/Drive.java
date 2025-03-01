@@ -55,12 +55,16 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.Constants;
 import frc.robot.constants.Constants.Mode;
 import frc.robot.constants.DriveConstants;
+import frc.robot.constants.FieldConstants;
 import frc.robot.constants.SwerveConstants;
 import frc.robot.subsystems.drive.imu.GyroIO;
 import frc.robot.subsystems.drive.imu.GyroIOInputsAutoLogged;
 import frc.robot.subsystems.drive.module.Module;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.leds.Leds;
+import frc.robot.util.FieldPoseUtils;
+import frc.robot.util.MyAlliance;
+
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -438,10 +442,28 @@ public class Drive extends SubsystemBase {
     return getPose().getTranslation().getDistance(point);
   }
 
-  /*public int closestFace(Translation2d point) {
 
-  }*/
 
+  public int closestFace() {
+    double minDistance = Double.MAX_VALUE; // Use max value to start with
+    int closestFaceIndex = -1; // Index of the closest face
+
+    // Loop over all face poses
+    for (int i = 0; i < FieldConstants.Reef.centerFaces.length; i++) {
+        Pose2d face = FieldConstants.Reef.centerFaces[i];
+        double distance = face.getTranslation().getDistance(getPose().getTranslation()); // Calculate distance
+
+        System.out.println("Face at: " + face + ", Distance: " + distance);
+
+        // Update if the current face is closer
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestFaceIndex = i; // Update index of the closest face
+        }
+    }
+
+    return closestFaceIndex; // Return the index of the closest face
+  }
   public Command runToPose(Supplier<Pose2d> targetPoseSupplier, boolean stop) {
     return new InstantCommand(() -> Leds.State.DrivingToPose = true)
         .andThen(
@@ -562,7 +584,8 @@ public class Drive extends SubsystemBase {
     ALIGNING_TO_INTAKE
   }
 
-  /*public Command alignToReef() {
+  public Command alignToReef() {
+    Pose2d targetFace = FieldConstants.Reef.centerFaces[closestFace()];
     return new InstantCommand(() -> setState(DriveState.ALIGNING_TO_REEF))
         .andThen(
             new DeferredCommand(
@@ -573,17 +596,17 @@ public class Drive extends SubsystemBase {
                               .getTranslation()
                               .minus(
                                   FieldPoseUtils.flipTranslationIfRed(
-                                      FieldConstants.SpeakerCloseSideCenter))
+                                    targetFace.getTranslation()))
                               .getAngle()
                               .getRadians());
 
                   var targetTranslation =
-                      FieldPoseUtils.flipTranslationIfRed(FieldConstants.SpeakerCloseSideCenter)
+                      FieldPoseUtils.flipTranslationIfRed(targetFace.getTranslation())
                           .plus(
                               new Translation2d(
                                       SmartDashboard.getNumber(
-                                          "Shooting Distance M",
-                                          FieldConstants.SpeakerShootingDistance),
+                                          "Reef Distance M",
+                                          DriveConstants.ReefPlacingDistance),
                                       0)
                                   .rotateBy(
                                       Rotation2d.fromRadians(
@@ -602,7 +625,7 @@ public class Drive extends SubsystemBase {
                       new Pose2d(
                           targetTranslation.getX(),
                           targetTranslation.getY(),
-                          FieldPoseUtils.flipTranslationIfRed(FieldConstants.SpeakerCloseSideCenter)
+                          FieldPoseUtils.flipTranslationIfRed(targetFace.getTranslation())
                               .minus((Translation2d) targetTranslation)
                               .getAngle()
                               .minus(Rotation2d.fromRadians(Math.PI)));
@@ -611,7 +634,7 @@ public class Drive extends SubsystemBase {
                 },
                 Set.of(this)))
         .finallyDo(() -> setState(DriveState.NONE));
-  }*/
+  }
 
   /*public Command alignToNote(Translation2d noteTranslation) {
     return new DeferredCommand(
