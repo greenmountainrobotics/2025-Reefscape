@@ -9,7 +9,6 @@ import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.constants.IdConstants;
-import frc.robot.constants.IntakeConstants;
 
 public class IntakeIOReal implements IntakeIO {
   private final SparkMax intakeRotateMotor = new SparkMax(IntakeRotateMotorId, MotorType.kBrushed);
@@ -26,9 +25,13 @@ public class IntakeIOReal implements IntakeIO {
     inputs.articulationPosition =
         Rotation2d.fromRadians(
             Rotation2d.fromRotations(
-                    (-articulationEncoder.getPosition()
-                        + IntakeConstants.AbsoluteEncoderOffset.getRotations()))
+                    (articulationEncoder
+                        .getPosition() /*- IntakeConstants.AbsoluteEncoderOffsetRads*/))
                 .getRadians());
+
+    inputs.articulationPositionReal = Rotation2d.fromRadians(articulationEncoder.getPosition());
+
+    inputs.articulationPositionRads = articulationEncoder.getPosition();
 
     inputs.articulationAppliedVolts = intakeRotateMotor.getAppliedOutput();
     inputs.articulationCurrentAmps = intakeRotateMotor.getOutputCurrent();

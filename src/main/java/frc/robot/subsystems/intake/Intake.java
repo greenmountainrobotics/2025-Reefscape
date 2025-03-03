@@ -28,7 +28,7 @@ public class Intake extends SubsystemBase {
   private double prevArticulation = 0.0;
   private double prevTimestamp = 0.0;
 
-  private Rotation2d articulationSetpoint = UpRotation;
+  private Rotation2d articulationSetpoint = new Rotation2d();
 
   public Intake(IntakeIO io) {
     this.io = io;
@@ -47,6 +47,8 @@ public class Intake extends SubsystemBase {
             new ProfiledPIDController(1, 0, 0.2, new TrapezoidProfile.Constraints(1, 1));
       }
     }
+    setArticulation(UpRotation);
+
     articulationPID.setGoal(angleModulus(articulationSetpoint.getRadians()));
 
     articulationSysId =
@@ -64,6 +66,9 @@ public class Intake extends SubsystemBase {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Intake", inputs);
+    Logger.recordOutput("Intake/Target Position Rotations", articulationSetpoint);
+    Logger.recordOutput("Intake/Target Position Real Radians", articulationSetpoint.getRadians());
+
     Logger.recordOutput("Intake/SysIdState", sysIdState.toString());
     Logger.recordOutput("Intake/ArticulationPositionRad", inputs.articulationPosition.getRadians());
     Logger.recordOutput(
@@ -82,7 +87,9 @@ public class Intake extends SubsystemBase {
   }
 
   public void setArticulation(Rotation2d rotation) {
-    articulationPID.setGoal(angleModulus(rotation.getRadians()));
+    /*double adjustedRadians =
+        angleModulus(rotation.getRadians() + IntakeConstants.AbsoluteEncoderOffsetRads);
+    articulationPID.setGoal(adjustedRadians);*/
     articulationSetpoint = rotation;
   }
 

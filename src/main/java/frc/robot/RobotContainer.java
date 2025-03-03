@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.constants.Constants;
+import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.SwerveConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.imu.GyroIO;
@@ -140,7 +141,7 @@ public class RobotContainer {
     // Intake
     controller2
         .leftTrigger()
-        .onTrue(intake.setShooter(-1).andThen(intake.rotateDown()))
+        .onTrue(intake.setShooter(IntakeConstants.IntakeSpeed).andThen(intake.rotateDown()))
         .onFalse(intake.setShooter(0).andThen(intake.rotateUp()));
     // Elevator
     // Ground Intake

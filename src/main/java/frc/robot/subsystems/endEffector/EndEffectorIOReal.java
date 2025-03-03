@@ -28,7 +28,7 @@ public class EndEffectorIOReal implements EndEffectorIO {
         Rotation2d.fromRadians(
             Rotation2d.fromRotations(
                     (-articulationEncoder.getPosition()
-                        + IntakeConstants.AbsoluteEncoderOffset.getRotations()))
+                        + IntakeConstants.AbsoluteEncoderOffsetRads))
                 .getRadians());
 
     inputs.articulationAppliedVolts = intakeRotateMotor.getAppliedOutput();

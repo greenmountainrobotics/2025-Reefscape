@@ -64,7 +64,6 @@ import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.leds.Leds;
 import frc.robot.util.FieldPoseUtils;
 import frc.robot.util.MyAlliance;
-
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -442,28 +441,28 @@ public class Drive extends SubsystemBase {
     return getPose().getTranslation().getDistance(point);
   }
 
-
-
   public int closestFace() {
     double minDistance = Double.MAX_VALUE; // Use max value to start with
     int closestFaceIndex = -1; // Index of the closest face
 
     // Loop over all face poses
     for (int i = 0; i < FieldConstants.Reef.centerFaces.length; i++) {
-        Pose2d face = FieldConstants.Reef.centerFaces[i];
-        double distance = face.getTranslation().getDistance(getPose().getTranslation()); // Calculate distance
+      Pose2d face = FieldConstants.Reef.centerFaces[i];
+      double distance =
+          face.getTranslation().getDistance(getPose().getTranslation()); // Calculate distance
 
-        System.out.println("Face at: " + face + ", Distance: " + distance);
+      System.out.println("Face at: " + face + ", Distance: " + distance);
 
-        // Update if the current face is closer
-        if (distance < minDistance) {
-            minDistance = distance;
-            closestFaceIndex = i; // Update index of the closest face
-        }
+      // Update if the current face is closer
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestFaceIndex = i; // Update index of the closest face
+      }
     }
 
     return closestFaceIndex; // Return the index of the closest face
   }
+
   public Command runToPose(Supplier<Pose2d> targetPoseSupplier, boolean stop) {
     return new InstantCommand(() -> Leds.State.DrivingToPose = true)
         .andThen(
@@ -595,8 +594,7 @@ public class Drive extends SubsystemBase {
                           getPose()
                               .getTranslation()
                               .minus(
-                                  FieldPoseUtils.flipTranslationIfRed(
-                                    targetFace.getTranslation()))
+                                  FieldPoseUtils.flipTranslationIfRed(targetFace.getTranslation()))
                               .getAngle()
                               .getRadians());
 
@@ -605,8 +603,7 @@ public class Drive extends SubsystemBase {
                           .plus(
                               new Translation2d(
                                       SmartDashboard.getNumber(
-                                          "Reef Distance M",
-                                          DriveConstants.ReefPlacingDistance),
+                                          "Reef Distance M", DriveConstants.ReefPlacingDistance),
                                       0)
                                   .rotateBy(
                                       Rotation2d.fromRadians(
