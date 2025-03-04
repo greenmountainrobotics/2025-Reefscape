@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 package frc.robot.subsystems.climber;
 
 import com.revrobotics.spark.SparkFlex;
@@ -18,7 +17,3 @@ public class ClimberIOReal implements ClimberIO {
     rightHangMotor.setVoltage(-volts);
   }
 }
-=======
-// ihttps://github.com/REVrobotics/SPARK-MAX-Examples/blob/master/Java/Motor%20Follower/src/main/java/frc/robot/Robot.java\
-// replaceing teh vitor sp
->>>>>>> Stashed changes
