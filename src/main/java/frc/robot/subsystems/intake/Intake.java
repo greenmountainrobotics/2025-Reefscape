@@ -1,6 +1,5 @@
 package frc.robot.subsystems.intake;
 
-import static edu.wpi.first.math.MathUtil.angleModulus;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.constants.IntakeConstants.*;
 
@@ -44,12 +43,10 @@ public class Intake extends SubsystemBase {
       }
       default -> {
         articulationPID =
-            new ProfiledPIDController(1, 0, 0.2, new TrapezoidProfile.Constraints(1, 1));
+            new ProfiledPIDController(0.2, 0, 0.2, new TrapezoidProfile.Constraints(1, 1));
       }
     }
     setArticulation(UpRotation);
-
-    articulationPID.setGoal(angleModulus(articulationSetpoint.getRadians()));
 
     articulationSysId =
         new SysIdRoutine(
@@ -67,10 +64,8 @@ public class Intake extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Intake", inputs);
     Logger.recordOutput("Intake/Target Position Rotations", articulationSetpoint);
-    Logger.recordOutput("Intake/Target Position Real Radians", articulationSetpoint.getRadians());
-
     Logger.recordOutput("Intake/SysIdState", sysIdState.toString());
-    Logger.recordOutput("Intake/ArticulationPositionRad", inputs.articulationPosition.getRadians());
+    Logger.recordOutput("Intake/ArticulationPosition", inputs.articulationPosition);
     Logger.recordOutput(
         "Intake/ArticulatinonVelocity",
         (inputs.articulationPosition.getRadians() - prevArticulation)
@@ -91,11 +86,12 @@ public class Intake extends SubsystemBase {
         angleModulus(rotation.getRadians() + IntakeConstants.AbsoluteEncoderOffsetRads);
     articulationPID.setGoal(adjustedRadians);*/
     articulationSetpoint = rotation;
+    articulationPID.setGoal(articulationSetpoint.getRadians());
   }
 
   @AutoLogOutput
   public boolean articulationIsAtSetpoint() {
-    return Math.abs(getArticulation().minus(articulationSetpoint).getRadians())
+    return Math.abs(getArticulation().minus(articulationSetpoint).getRotations())
         < ArticulationToleranceRad;
   }
 

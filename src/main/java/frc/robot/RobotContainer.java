@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.constants.Constants;
-import frc.robot.constants.IntakeConstants;
+import frc.robot.constants.EndEffectorConstants;
 import frc.robot.constants.SwerveConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.imu.GyroIO;
@@ -28,8 +28,8 @@ import frc.robot.subsystems.drive.imu.GyroIOPigeon2;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.drive.module.ModuleIOSim;
 import frc.robot.subsystems.drive.module.ModuleIOTalonFX;
-import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.IntakeIOReal;
+import frc.robot.subsystems.endEffector.EndEffector;
+import frc.robot.subsystems.endEffector.EndEffectorIOReal;
 import frc.robot.subsystems.vision.*;
 
 /**
@@ -43,9 +43,9 @@ public class RobotContainer {
   public Drive drive;
   public Vision vision;
   // public Elevator elevator;
-  public Intake intake;
+  // public Intake intake;
   // public Climber climber;
-  // public EndEffector endEffector;
+  public EndEffector endEffector;
   // public AutoFactory autoFactory;
 
   // Controller
@@ -77,9 +77,9 @@ public class RobotContainer {
 
                 );
         //  elevator = new Elevator(new ElevatorIOKraken());
-        intake = new Intake(new IntakeIOReal());
+        // intake = new Intake(new IntakeIOReal());
         // climber = new Climber(new ClimberIOReal());
-        // endEffector = new EndEffector(new EndEffectorIOReal());
+        endEffector = new EndEffector(new EndEffectorIOReal());
         //  autoFactory = new AutoFactory(drive::getPose, drive::setPose, drive::followTrajectory,
         // false, drive);
         break;
@@ -141,8 +141,11 @@ public class RobotContainer {
     // Intake
     controller2
         .leftTrigger()
-        .onTrue(intake.setShooter(IntakeConstants.IntakeSpeed).andThen(intake.rotateDown()))
-        .onFalse(intake.setShooter(0).andThen(intake.rotateUp()));
+        .onTrue(
+            endEffector
+                .setShooter(EndEffectorConstants.IntakeSpeed)
+                .andThen(endEffector.rotateDown()))
+        .onFalse(endEffector.setShooter(0).andThen(endEffector.rotateUp()));
     // Elevator
     // Ground Intake
     /*    controller2

@@ -3,38 +3,43 @@ package frc.robot.subsystems.endEffector;
 import static frc.robot.constants.IdConstants.CANId.*;
 
 import com.revrobotics.AbsoluteEncoder;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.constants.IdConstants;
-import frc.robot.constants.IntakeConstants;
 
 public class EndEffectorIOReal implements EndEffectorIO {
   private final SparkMax intakeRotateMotor =
       new SparkMax(EndEffectorRotateMotorId, MotorType.kBrushless);
+  SparkMaxConfig config = new SparkMaxConfig();
+
   private final SparkMax intakeSpinMotor = new SparkMax(EndEffectorSpinMotorId, MotorType.kBrushed);
+  private double Voltage = 0.0;
 
   private final DigitalInput limitSwitch = new DigitalInput(IdConstants.DIOId.LimitSwitchId);
   private final AbsoluteEncoder articulationEncoder;
 
   public EndEffectorIOReal() {
     articulationEncoder = intakeRotateMotor.getAbsoluteEncoder();
+    config.inverted(false).idleMode(IdleMode.kBrake);
+
+    intakeRotateMotor.configure(
+        config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   @Override
   public void updateInputs(EndEffectorIOInputs inputs) {
-    inputs.articulationPosition =
-        Rotation2d.fromRadians(
-            Rotation2d.fromRotations(
-                    (-articulationEncoder.getPosition()
-                        + IntakeConstants.AbsoluteEncoderOffsetRads))
-                .getRadians());
+    inputs.articulationPosition = new Rotation2d(articulationEncoder.getPosition());
 
     inputs.articulationAppliedVolts = intakeRotateMotor.getAppliedOutput();
     inputs.articulationCurrentAmps = intakeRotateMotor.getOutputCurrent();
 
-    inputs.spinAppliedVolts = intakeSpinMotor.getAppliedOutput();
+    inputs.spinAppliedVolts = Voltage;
     inputs.spinCurrentAmps = intakeSpinMotor.getOutputCurrent();
     inputs.limitSwitchPressed = limitSwitch.get();
   }

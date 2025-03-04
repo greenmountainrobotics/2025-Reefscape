@@ -1,6 +1,5 @@
 package frc.robot.subsystems.endEffector;
 
-import static edu.wpi.first.math.MathUtil.angleModulus;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.constants.EndEffectorConstants.*;
 
@@ -47,7 +46,7 @@ public class EndEffector extends SubsystemBase {
             new ProfiledPIDController(1, 0, 0.2, new TrapezoidProfile.Constraints(1, 1));
       }
     }
-    articulationPID.setGoal(angleModulus(articulationSetpoint.getRadians()));
+    setArticulation(UpRotation);
 
     articulationSysId =
         new SysIdRoutine(
@@ -64,7 +63,12 @@ public class EndEffector extends SubsystemBase {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("EndEffector", inputs);
+    Logger.recordOutput("EndEffector/Target Position Rotations", articulationSetpoint);
+
     Logger.recordOutput("EndEffector/SysIdState", sysIdState.toString());
+
+    Logger.recordOutput("EndEffector/Articulation Volts", Math.max(-1.0, Math.min(1.0, articulationPID.calculate(inputs.articulationPosition.getRadians()))) * 12.0);
+
     Logger.recordOutput(
         "EndEffector/ArticulationPositionRad", inputs.articulationPosition.getRadians());
     Logger.recordOutput(
@@ -75,7 +79,7 @@ public class EndEffector extends SubsystemBase {
     prevTimestamp = Timer.getFPGATimestamp();
     if (sysIdState != SysIdRoutineLog.State.kNone) return;
 
-    io.articulationRunVoltage(articulationPID.calculate(inputs.articulationPosition.getRadians()));
+    io.articulationRunVoltage(Math.max(-1.0, Math.min(1.0, articulationPID.calculate(inputs.articulationPosition.getRadians()))) * 12.0);
   }
 
   public void setIntakeSpeed(double speed) {
@@ -83,8 +87,11 @@ public class EndEffector extends SubsystemBase {
   }
 
   public void setArticulation(Rotation2d rotation) {
-    articulationPID.setGoal(angleModulus(rotation.getRadians()));
+    /*double adjustedRadians =
+        angleModulus(rotation.getRadians() + IntakeConstants.AbsoluteEncoderOffsetRads);
+    articulationPID.setGoal(adjustedRadians);*/
     articulationSetpoint = rotation;
+    articulationPID.setGoal(articulationSetpoint.getRadians());
   }
 
   @AutoLogOutput

@@ -5,8 +5,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 public class EndEffectorConstants {
   // public static final double PivotHeight = inchesToMeters(8.369);
   // articulation is measured between extension and top side of end effector when retracted
-  public static final Rotation2d DownRotation = Rotation2d.fromDegrees(-77);
-  public static final Rotation2d UpRotation = Rotation2d.fromDegrees(0);
+  public static final Rotation2d DownRotation = new Rotation2d(0.946);
+  public static final Rotation2d UpRotation = new Rotation2d(0.76);
 
   /*public static final Rotation2d TargetArticulation = Rotation2d.fromDegrees(-77);
   public static final Rotation2d RetractedArticulation = Rotation2d.fromDegrees(90 + 36);

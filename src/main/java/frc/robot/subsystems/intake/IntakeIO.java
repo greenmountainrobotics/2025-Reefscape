@@ -8,7 +8,6 @@ public interface IntakeIO {
   class IntakeIOInputs {
     public Rotation2d articulationPosition = new Rotation2d();
     public Rotation2d articulationPositionReal = new Rotation2d();
-    public double articulationPositionRads = 0.0;
 
     public double articulationAppliedVolts = 0.0;
     public double articulationCurrentAmps = 0.0;
