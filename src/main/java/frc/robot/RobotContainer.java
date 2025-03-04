@@ -28,8 +28,8 @@ import frc.robot.subsystems.drive.imu.GyroIOPigeon2;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.drive.module.ModuleIOSim;
 import frc.robot.subsystems.drive.module.ModuleIOTalonFX;
-import frc.robot.subsystems.endEffector.EndEffector;
-import frc.robot.subsystems.endEffector.EndEffectorIOReal;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIOReal;
 import frc.robot.subsystems.vision.*;
 
 /**
@@ -43,7 +43,7 @@ public class RobotContainer {
   public Drive drive;
   public Vision vision;
   // public Elevator elevator;
-  // public Intake intake;
+  public Intake intake;
   // public Climber climber;
   public EndEffector endEffector;
   // public AutoFactory autoFactory;
@@ -77,7 +77,7 @@ public class RobotContainer {
 
                 );
         //  elevator = new Elevator(new ElevatorIOKraken());
-        // intake = new Intake(new IntakeIOReal());
+        intake = new Intake(new IntakeIOReal());
         // climber = new Climber(new ClimberIOReal());
         endEffector = new EndEffector(new EndEffectorIOReal());
         //  autoFactory = new AutoFactory(drive::getPose, drive::setPose, drive::followTrajectory,
@@ -101,6 +101,8 @@ public class RobotContainer {
                 //    ,new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose)
 
                 );
+
+        elevator = new Elevator(new ElevatorIOSim());
 
         break;
 
@@ -141,11 +143,8 @@ public class RobotContainer {
     // Intake
     controller2
         .leftTrigger()
-        .onTrue(
-            endEffector
-                .setShooter(EndEffectorConstants.IntakeSpeed)
-                .andThen(endEffector.rotateDown()))
-        .onFalse(endEffector.setShooter(0).andThen(endEffector.rotateUp()));
+        .onTrue(intake.setShooter(-1).andThen(intake.rotateDown()))
+        .onFalse(intake.setShooter(0).andThen(intake.rotateUp()));
     // Elevator
     // Ground Intake
     /*    controller2
