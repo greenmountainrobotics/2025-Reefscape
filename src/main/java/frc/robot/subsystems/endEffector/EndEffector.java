@@ -67,7 +67,12 @@ public class EndEffector extends SubsystemBase {
 
     Logger.recordOutput("EndEffector/SysIdState", sysIdState.toString());
 
-    Logger.recordOutput("EndEffector/Articulation Volts", Math.max(-1.0, Math.min(1.0, articulationPID.calculate(inputs.articulationPosition.getRadians()))) * 12.0);
+    Logger.recordOutput(
+        "EndEffector/Articulation Volts",
+        Math.max(
+                -1.0,
+                Math.min(1.0, articulationPID.calculate(inputs.articulationPosition.getRadians())))
+            * 12.0);
 
     Logger.recordOutput(
         "EndEffector/ArticulationPositionRad", inputs.articulationPosition.getRadians());
@@ -79,7 +84,11 @@ public class EndEffector extends SubsystemBase {
     prevTimestamp = Timer.getFPGATimestamp();
     if (sysIdState != SysIdRoutineLog.State.kNone) return;
 
-    io.articulationRunVoltage(Math.max(-1.0, Math.min(1.0, articulationPID.calculate(inputs.articulationPosition.getRadians()))) * 12.0);
+    io.articulationRunVoltage(
+        Math.max(
+                -1.0,
+                Math.min(1.0, articulationPID.calculate(inputs.articulationPosition.getRadians())))
+            * 12.0);
   }
 
   public void setIntakeSpeed(double speed) {

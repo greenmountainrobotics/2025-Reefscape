@@ -16,10 +16,7 @@ public interface EndEffectorIO {
     public boolean limitSwitchPressed = false;
 
     public double spinPositionRad = 0.0;
-    /*public AngularVelocity spinAngularVelocity = new AngularVelocity() {
 
-    };
-    public AngularVelocity articulationPositionRad = 0.0;*/
     public double articulationAngularVelocity = 0.0;
   }
 

@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.constants.Constants;
-import frc.robot.constants.EndEffectorConstants;
 import frc.robot.constants.SwerveConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.imu.GyroIO;
@@ -28,8 +27,7 @@ import frc.robot.subsystems.drive.imu.GyroIOPigeon2;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.drive.module.ModuleIOSim;
 import frc.robot.subsystems.drive.module.ModuleIOTalonFX;
-import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.IntakeIOReal;
+import frc.robot.subsystems.elevator.*;
 import frc.robot.subsystems.vision.*;
 
 /**
@@ -42,10 +40,10 @@ public class RobotContainer {
   // Subsystems
   public Drive drive;
   public Vision vision;
-  // public Elevator elevator;
-  public Intake intake;
+  public Elevator elevator;
+  // public Intake intake;
   // public Climber climber;
-  public EndEffector endEffector;
+  // public EndEffector endEffector;
   // public AutoFactory autoFactory;
 
   // Controller
@@ -76,10 +74,10 @@ public class RobotContainer {
                     Camera.FrontLeftCamera.name, Camera.BackCamera.robotToCam)*/
 
                 );
-        //  elevator = new Elevator(new ElevatorIOKraken());
-        intake = new Intake(new IntakeIOReal());
+        elevator = new Elevator(new ElevatorIOKraken());
+        // intake = new Intake(new IntakeIOReal());
         // climber = new Climber(new ClimberIOReal());
-        endEffector = new EndEffector(new EndEffectorIOReal());
+        // endEffector = new EndEffector(new EndEffectorIOReal());
         //  autoFactory = new AutoFactory(drive::getPose, drive::setPose, drive::followTrajectory,
         // false, drive);
         break;
@@ -101,8 +99,6 @@ public class RobotContainer {
                 //    ,new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose)
 
                 );
-
-        elevator = new Elevator(new ElevatorIOSim());
 
         break;
 
@@ -141,10 +137,11 @@ public class RobotContainer {
             () -> -controller1.getRightX()));
 
     // Intake
-    controller2
-        .leftTrigger()
-        .onTrue(intake.setShooter(-1).andThen(intake.rotateDown()))
-        .onFalse(intake.setShooter(0).andThen(intake.rotateUp()));
+    /* */
+    /*controller2
+    .leftTrigger()
+    .onTrue(intake.setShooter(-1).andThen(intake.rotateDown()))
+    .onFalse(intake.setShooter(0).andThen(intake.rotateUp()));*/
     // Elevator
     // Ground Intake
     /*    controller2

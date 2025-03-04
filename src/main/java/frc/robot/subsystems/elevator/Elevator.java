@@ -44,7 +44,8 @@ public class Elevator extends SubsystemBase {
     Logger.recordOutput("Elevator/rightTempCelsius", inputs.rightTempCelsius);
     Logger.recordOutput("Elevator/rightPositionTicks", inputs.rightPositionTicks);
 
-    io.runVoltage(12 * elevatorPID.calculate(inputs.leftPositionTicks, targetPositionInches * ticksPerInch));
+    io.runVoltage(
+        12 * elevatorPID.calculate(inputs.leftPositionTicks, targetPositionInches * ticksPerInch));
   }
 
   public void setPosition(double targetPositionInches) {
