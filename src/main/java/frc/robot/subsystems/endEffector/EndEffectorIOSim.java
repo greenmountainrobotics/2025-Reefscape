@@ -6,8 +6,17 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 public class EndEffectorIOSim implements EndEffectorIO {
     private static final double LOOP_PERIOD_SECS = 0.02;
 
-    private final DCMotorSim intakeSpinMotor = new DCMotorSim(DCMotor.getVex775Pro(1), 1, 0.001);
-    private final DCMotorSim intakeRotateMotor = new DCMotorSim(DCMotor.getNEO(1),1, 0.001);
+    private static final DCMotor leftExtentionMotor = DCMotor.DCMotor.getVex775Pro(1);
+    private static final DCMotor rightExtentionMotor = DCMotorgetNEO(1);
+
+  private DCMotorSim intakeSpinMotor =
+      new DCMotorSim(
+          LinearSystemId.createDCMotorSystem(leftExtentionMotor, 1.0, 1.0), leftExtentionMotor);
+
+  private DCMotorSim intakeRotateMotor =
+      new DCMotorSim(
+          LinearSystemId.createDCMotorSystem(leftExtentionMotor, 1.0, 1.0), leftExtentionMotor);
+
 
     private double spinAppliedVolts = 0.0;
     private double spinCurrentAmps = 0.0;
@@ -36,7 +45,7 @@ public class EndEffectorIOSim implements EndEffectorIO {
         inputs.spinAngularVelocity = intakeSpinMotor.getAngularVelocity();
 
         inputs.articulationPositionRad = intakeRotateMotor.getAngularPositionRad();
-        inputs.articulationPositionRad = intakeSpinMotor.getAngularVelocity();
+        inputs.articulationAngularVelocity = intakeSpinMotor.getAngularVelocity();
 
 }
 
