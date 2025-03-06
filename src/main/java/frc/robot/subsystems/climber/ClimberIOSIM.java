@@ -7,7 +7,7 @@ public class ClimberIOSIM implements ClimberIO{
     private static final double LOOP_PERIOD_SECS = 0.02;
 
     private static final DCMotor leftExtentionMotor = DCMotor.DCMotor.getVex775Pro(1);
-    private static final DCMotor rightExtentionMotor = DCMotorgetNEO(1);
+    private static final DCMotor rightExtentionMotor = DCMotor.DCMotor.getNEO(1);
 
     private DCMotorSim intakeSpinMotor =
         new DCMotorSim(
@@ -30,26 +30,28 @@ public class ClimberIOSIM implements ClimberIO{
         inputs.leftCurrentAmps = leftCurrentAmps;
         inputs.rightCurrentAmps = rightCurrentAmps;
 
-        inputs.spinAppliedVolts = intakeSpinMotor.getInputVoltage();
-        inputs.rightCurrentAmps = intakeSpinMotor.getCurrentDrawAmps();
+        inputs.hangAppliedVolts = leftExtentionMotor.getInputVoltage();
 
-        inputs.spinPositionRad = intakeSpinMotor.getAngularPositionRad();
-        inputs.spinAngularVelocity = intakeSpinMotor.getAngularVelocity();
+        inputs.rightCurrentAmps = rightExtentionMotor.getCurrentDrawAmps();
+        inputs.leftCurentAmps = leftExtentionMotor.getCurrentDrawAmps();
 
-        inputs.articulationPositionRad = intakeRotateMotor.getAngularPositionRad();
-        inputs.articulationAngularVelocity = intakeSpinMotor.getAngularVelocity();
+        inputs.spinPositionRad = leftExtentionMotor.getAngularPositionRad();
+        inputs.spinAngularVelocity = leftExtentionMotor.getAngularVelocity();
+
+        inputs.leftPositionRad = leftExtentionMotor.getAngularPositionRad();
+        inputs.leftAngularVelocity = leftExtentionMotor.getAngularVelocity();
     }   
 
     @Override
-    public void articulationRunVoltage(double voltage) {
-        articulationAppliedVolts = voltage;
-        intakeRotateMotor.setInputVoltage(voltage); //why setINPUTVoltage?
+    public void hangRunVoltage(double voltage) {
+        hangAppliedVolts = voltage;
+        leftExtentionMotor.setInputVoltage(voltage);
     }
 
     @Override
     public void spinRunVoltage(double voltage) {
         spinAppliedVolts = voltage;
-        intakeSpinMotor.setInputVoltage(voltage);  //why setINPUTVoltage?
+        intakeSpinMotor.setInputVoltage(voltage);  
 
     }
 
