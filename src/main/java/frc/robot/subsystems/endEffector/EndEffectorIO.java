@@ -2,7 +2,6 @@ package frc.robot.subsystems.endEffector;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
-
 import org.littletonrobotics.junction.AutoLog;
 
 public interface EndEffectorIO {
