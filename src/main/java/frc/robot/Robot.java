@@ -29,8 +29,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -65,22 +63,27 @@ public class Robot extends LoggedRobot {
       Choreo.loadTrajectory("myTrajectory");
   private final Timer timer = new Timer();
 
-  private final Mechanism2d mech2d = new Mechanism2d(60, 60);
-  private final MechanismRoot2d root = mech2d.getRoot("ArmRoot", 30, 30);
-  private final MechanismLigament2d arm =
-      new MechanismLigament2d("Arm", 50, 90, 6, new Color8Bit(Color.kBlue));
+  // the main mechanism object
+
+  Mechanism2d mech = new Mechanism2d(3, 3);
+  // the mechanism root node
+  MechanismRoot2d root = mech.getRoot("wrist", 2, 1);
+  MechanismLigament2d elevtatorLig = new MechanismLigament2d("elevator", 5, 90);
+  MechanismLigament2d wristLig = new MechanismLigament2d("wrist", 1, 0);
 
   public Robot() {
+    // Robot Sim Mechs
+    elevtatorLig = root.append(new MechanismLigament2d("elevator", 1, 90));
+    wristLig = root.append(new MechanismLigament2d("wrist", 1, 0));
+
     // Record metadata
     Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
     Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
     Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
     Logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
     Logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
+    SmartDashboard.putData("Mech2d", mech);
 
-    // Initialize Mech2d simulation
-    root.append(arm);
-    SmartDashboard.putData("Arm Sim", mech2d);
     switch (BuildConstants.DIRTY) {
       case 0:
         Logger.recordMetadata("GitDirty", "All changes committed");
@@ -225,10 +228,7 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically whilst in simulation. */
   @Override
-  public void simulationPeriodic() {
-    double time = timer.get();
-    arm.setAngle(time * 10);
-  }
+  public void simulationPeriodic() {}
 
   // AUTO--------------------------------------------------------------------------------------------------------------------------
   private AutoRoutine autoLeft() {
