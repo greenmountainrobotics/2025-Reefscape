@@ -1,12 +1,16 @@
 package frc.robot.subsystems.climber;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.AngularVelocity;
+
 import org.littletonrobotics.junction.AutoLog;
 
 public interface ClimberIO {
   @AutoLog
   class ClimberIOInputs {
-    public double hangAppliedVolts = 0.0;
-
+    public double leftAppliedVolts = 0.0;
+    public double rightAppliedVolts = 0.0;
+    
     public double leftCurrentAmps = 0.0;
     public double rightCurrentAmps = 0.0;
 
@@ -21,5 +25,7 @@ public interface ClimberIO {
 
   default void updateInputs(ClimberIOInputs inputs) {}
 
-  default void hangRunVoltage(double voltage) {}
+  default void leftHangRunVoltage(double voltage) {}
+
+  default void rightHangRunVoltage(double voltage) {}
 }
