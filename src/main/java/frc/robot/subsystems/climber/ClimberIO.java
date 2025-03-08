@@ -10,7 +10,7 @@ public interface ClimberIO {
   class ClimberIOInputs {
     public double leftAppliedVolts = 0.0;
     public double rightAppliedVolts = 0.0;
-    
+
     public double leftCurrentAmps = 0.0;
     public double rightCurrentAmps = 0.0;
 
@@ -19,8 +19,6 @@ public interface ClimberIO {
 
     public double leftPositionRad = 0.0;
     public AngularVelocity leftAngularVelocity;
-
-
   }
 
   default void updateInputs(ClimberIOInputs inputs) {}

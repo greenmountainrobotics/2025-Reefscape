@@ -30,6 +30,8 @@ public class ClimberIOSIM implements ClimberIO{
 
         inputs.leftAppliedVolts = leftAppliedVolts;
         inputs.leftCurrentAmps = leftCurrentAmps;
+        inputs.rightAppliedVolts = rightAppliedVolts;
+        inputs.rightCurrentAmps = rightCurrentAmps;
 
         inputs.leftAppliedVolts = leftHangMotorSim.getInputVoltage();
         inputs.leftCurrentAmps = leftHangMotorSim.getCurrentDrawAmps();
@@ -50,5 +52,4 @@ public class ClimberIOSIM implements ClimberIO{
         rightHangMotorSim.setInputVoltage(voltage);  
 
     }
-
 }
