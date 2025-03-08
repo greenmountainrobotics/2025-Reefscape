@@ -15,13 +15,11 @@ public class ElevatorIOSim implements ElevatorIO {
 
   private DCMotorSim leftExtensionMotor =
       new DCMotorSim(
-          LinearSystemId.createDCMotorSystem(leftExtentionMotor, 1.0, 1.0), leftExtentionMotor);
+          LinearSystemId.createDCMotorSystem(rightExtentionMotor, 1.0, 1.0), rightExtentionMotor);
   private static final double LOOP_PERIOD_SECS = 0.02;
 
   private double leftExtensionAppliedVoltage = 0.0;
   private double rightExtensionAppliedVoltage = 0.0;
-
-  // public void ElevatorIO(){}
 
   @Override
   public void updateInputs(ElevatorIOInputs inputs) {
