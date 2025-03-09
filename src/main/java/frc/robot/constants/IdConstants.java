@@ -4,8 +4,8 @@ public final class IdConstants {
   public static final class CANId {
     // This might end up being canivore
 
-    public static final int LeftElevatorMotorId = 14; // Kwaken
-    public static final int RightElevatorMotorId = 15; // Kwaken
+    public static final int LeftElevatorMotorId = 22; // Kwaken
+    public static final int RightElevatorMotorId = 23; // Kwaken
 
     public static final int IntakeRotateMotorId = 16; // 775 (Spark Max Brushed)
     public static final int IntakeSpinMotorId = 17; // Neo Vortex (Spark Flex)

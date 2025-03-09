@@ -26,7 +26,8 @@ public class EndEffectorIOReal implements EndEffectorIO {
 
   public EndEffectorIOReal() {
     articulationEncoder = intakeRotateMotor.getAbsoluteEncoder();
-    config.inverted(false).idleMode(IdleMode.kBrake);
+
+    config.inverted(true).idleMode(IdleMode.kBrake);
 
     intakeRotateMotor.configure(
         config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -34,7 +35,7 @@ public class EndEffectorIOReal implements EndEffectorIO {
 
   @Override
   public void updateInputs(EndEffectorIOInputs inputs) {
-    inputs.articulationPosition = new Rotation2d(articulationEncoder.getPosition());
+    inputs.articulationPosition = new Rotation2d(articulationEncoder.getPosition() * 2 * Math.PI);
 
     inputs.articulationAppliedVolts = intakeRotateMotor.getAppliedOutput();
     inputs.articulationCurrentAmps = intakeRotateMotor.getOutputCurrent();
@@ -46,7 +47,7 @@ public class EndEffectorIOReal implements EndEffectorIO {
 
   @Override
   public void articulationRunVoltage(double voltage) {
-    intakeRotateMotor.setVoltage(voltage);
+    intakeRotateMotor.setVoltage(voltage * 12);
   }
 
   @Override

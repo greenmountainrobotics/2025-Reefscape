@@ -12,10 +12,11 @@ public final class TunableConstants {
   public static final double KdElevator = 0;
 
   public static final double KpIntakeArticulation = 3;
-  public static final double KiIntakeArticulation = 0.001;
+  public static final double KiIntakeArticulation = 0;
   public static final double KdIntakeArticulation = 0;
 
-  public static final double KpEndEffectorArticulation = 19;
+  public static final double KpEndEffectorArticulation = 0.025;
   public static final double KiEndEffectorArticulation = 0;
   public static final double KdEndEffectorArticulation = 0;
+  public static final double KgEndEffectorArticulation = 0.01;
 }

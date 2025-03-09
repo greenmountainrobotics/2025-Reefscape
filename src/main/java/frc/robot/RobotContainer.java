@@ -27,7 +27,8 @@ import frc.robot.subsystems.drive.imu.GyroIOPigeon2;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.drive.module.ModuleIOSim;
 import frc.robot.subsystems.drive.module.ModuleIOTalonFX;
-import frc.robot.subsystems.elevator.*;
+import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.ElevatorIOKraken;
 import frc.robot.subsystems.vision.*;
 
 /**
@@ -137,11 +138,15 @@ public class RobotContainer {
             () -> -controller1.getRightX()));
 
     // Intake
-    /* */
-    /*controller2
-    .leftTrigger()
-    .onTrue(intake.setShooter(-1).andThen(intake.rotateDown()))
-    .onFalse(intake.setShooter(0).andThen(intake.rotateUp()));*/
+    /*  controller2
+            .leftTrigger()
+            .onTrue(
+                endEffector
+                    .setShooter(EndEffectorConstants.IntakeSpeed)
+                    .andThen(endEffector.RotateCoralPlacement()))
+            .onFalse(endEffector.setShooter(0).andThen(endEffector.RotateCoralPickup()));
+    */
+    controller2.rightTrigger().onTrue(elevator.goToBarge()).onFalse(elevator.goToGroundLevel());
     // Elevator
     // Ground Intake
     /*    controller2

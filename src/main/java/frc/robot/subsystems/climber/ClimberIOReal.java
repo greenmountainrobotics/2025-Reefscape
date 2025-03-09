@@ -18,7 +18,7 @@ public class ClimberIOReal implements ClimberIO {
   }
 
   public void updateInputs(ClimberIOInputs inputs) {
-    inputs.currentDrawLeft = leftHangMotor.getOutputCurrent();
-    inputs.currentDrawRight = rightHangMotor.getOutputCurrent();
+    inputs.leftCurrentAmps = leftHangMotor.getOutputCurrent();
+    inputs.rightCurrentAmps = rightHangMotor.getOutputCurrent();
   }
 }

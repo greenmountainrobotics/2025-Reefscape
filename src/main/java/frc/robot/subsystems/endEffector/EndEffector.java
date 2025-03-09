@@ -1,5 +1,6 @@
 package frc.robot.subsystems.endEffector;
 
+import static edu.wpi.first.math.MathUtil.angleModulus;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.constants.EndEffectorConstants.*;
 
@@ -27,7 +28,10 @@ public class EndEffector extends SubsystemBase {
   private double prevArticulation = 0.0;
   private double prevTimestamp = 0.0;
 
-  private Rotation2d articulationSetpoint = UpRotation;
+  private double appliedVolts = 0.0;
+  private double adjustedPos = 0.0;
+
+  private Rotation2d articulationSetpoint;
 
   public EndEffector(EndEffectorIO io) {
     this.io = io;
@@ -39,14 +43,14 @@ public class EndEffector extends SubsystemBase {
                 TunableConstants.KpEndEffectorArticulation,
                 TunableConstants.KiEndEffectorArticulation,
                 TunableConstants.KdEndEffectorArticulation,
-                new TrapezoidProfile.Constraints(200, 100));
+                new TrapezoidProfile.Constraints(50, 10));
       }
       default -> {
         articulationPID =
             new ProfiledPIDController(1, 0, 0.2, new TrapezoidProfile.Constraints(1, 1));
       }
     }
-    setArticulation(UpRotation);
+    setArticulation(CoralPickupRotation);
 
     articulationSysId =
         new SysIdRoutine(
@@ -61,21 +65,49 @@ public class EndEffector extends SubsystemBase {
 
   @Override
   public void periodic() {
+
+    adjustedPos =
+        angleModulus((inputs.articulationPosition.minus(AbsoluteEncoderOffset)).getRadians());
+
+    adjustedPos = 90 - adjustedPos * (180 / Math.PI);
+
+    // appliedVolts = (Math.cos(adjustedPos * (Math.PI / 180)) *
+    // TunableConstants.KgEndEffectorArticulation);
+
+    appliedVolts =
+        Math.max(
+            -1.0,
+            Math.min(
+                1.0,
+                (articulationPID.calculate(adjustedPos)
+                    + (Math.cos(adjustedPos * (Math.PI / 180))
+                        * TunableConstants.KgEndEffectorArticulation))));
     io.updateInputs(inputs);
     Logger.processInputs("EndEffector", inputs);
     Logger.recordOutput("EndEffector/Target Position Rotations", articulationSetpoint);
 
+    Logger.recordOutput("EndEffector/Target Position Degrees", articulationSetpoint.getDegrees());
+
     Logger.recordOutput("EndEffector/SysIdState", sysIdState.toString());
 
+    Logger.recordOutput("EndEffector/Articulation Volts", appliedVolts);
+
     Logger.recordOutput(
-        "EndEffector/Articulation Volts",
-        Math.max(
-                -1.0,
-                Math.min(1.0, articulationPID.calculate(inputs.articulationPosition.getRadians())))
-            * 12.0);
+        "EndEffector/Articulation Cosine", (Math.cos(adjustedPos * (Math.PI / 180))));
+
+    Logger.recordOutput(
+        "EndEffector/ArticulationPositionRot", inputs.articulationPosition.getRotations());
+
+    Logger.recordOutput(
+        "EndEffector/ArticulationPositionRaw", inputs.articulationPosition.getRotations());
 
     Logger.recordOutput(
         "EndEffector/ArticulationPositionRad", inputs.articulationPosition.getRadians());
+    Logger.recordOutput(
+        "EndEffector/AdjustedArticulationPositionRot",
+        (inputs.articulationPosition.minus(AbsoluteEncoderOffset)).getRotations());
+    Logger.recordOutput("EndEffector/AdjustedArticulationPositionRad", adjustedPos);
+    Logger.recordOutput("EndEffector/AdjustedArticulationPositionDeg", adjustedPos);
     Logger.recordOutput(
         "EndEffector/ArticulatinonVelocity",
         (inputs.articulationPosition.getRadians() - prevArticulation)
@@ -83,12 +115,14 @@ public class EndEffector extends SubsystemBase {
     prevArticulation = inputs.articulationPosition.getRadians();
     prevTimestamp = Timer.getFPGATimestamp();
     if (sysIdState != SysIdRoutineLog.State.kNone) return;
+    io.articulationRunVoltage(appliedVolts);
+    /*if (!articulationIsAtSetpoint()) {
 
-    io.articulationRunVoltage(
-        Math.max(
-                -1.0,
-                Math.min(1.0, articulationPID.calculate(inputs.articulationPosition.getRadians())))
-            * 12.0);
+
+    } else {
+      io.articulationRunVoltage(0.0);
+    }*/
+
   }
 
   public void setIntakeSpeed(double speed) {
@@ -96,11 +130,9 @@ public class EndEffector extends SubsystemBase {
   }
 
   public void setArticulation(Rotation2d rotation) {
-    /*double adjustedRadians =
-        angleModulus(rotation.getRadians() + IntakeConstants.AbsoluteEncoderOffsetRads);
-    articulationPID.setGoal(adjustedRadians);*/
     articulationSetpoint = rotation;
-    articulationPID.setGoal(articulationSetpoint.getRadians());
+
+    articulationPID.setGoal(articulationSetpoint.getDegrees());
   }
 
   @AutoLogOutput
@@ -127,18 +159,34 @@ public class EndEffector extends SubsystemBase {
     return new InstantCommand(() -> setIntakeSpeed(speed));
   }
 
-  public Command rotateDown() {
+  public Command RotateCoralPickup() {
     return new InstantCommand(
         () -> {
-          setArticulation(DownRotation);
+          setArticulation(CoralPickupRotation);
         },
         this);
   }
 
-  public Command rotateUp() {
+  public Command RotateCoralPlacement() {
     return new InstantCommand(
         () -> {
-          setArticulation(UpRotation);
+          setArticulation(CoralPlacementPosition);
+        },
+        this);
+  }
+
+  public Command RotateCoralL4Placement() {
+    return new InstantCommand(
+        () -> {
+          setArticulation(CoralL4PlacementPosition);
+        },
+        this);
+  }
+
+  public Command RotateBargePlacement() {
+    return new InstantCommand(
+        () -> {
+          setArticulation(BargePlacementRotation);
         },
         this);
   }
