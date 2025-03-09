@@ -50,7 +50,13 @@ public class EndEffector extends SubsystemBase {
             new ProfiledPIDController(1, 0, 0.2, new TrapezoidProfile.Constraints(1, 1));
       }
     }
-    setArticulation(CoralPickupRotation);
+
+    adjustedPos =
+    angleModulus((inputs.articulationPosition.minus(AbsoluteEncoderOffset)).getRadians());
+
+    adjustedPos = 90 - adjustedPos * (180 / Math.PI);
+    
+    setArticulation(Rotation2d.fromDegrees(adjustedPos));
 
     articulationSysId =
         new SysIdRoutine(
@@ -125,14 +131,15 @@ public class EndEffector extends SubsystemBase {
 
   }
 
+
   public void setIntakeSpeed(double speed) {
     io.spinRunVoltage(12.0 * speed);
   }
 
   public void setArticulation(Rotation2d rotation) {
     articulationSetpoint = rotation;
-
     articulationPID.setGoal(articulationSetpoint.getDegrees());
+   //articulationPID.reset(articulationSetpoint.getDegrees(), 0.0);
   }
 
   @AutoLogOutput
