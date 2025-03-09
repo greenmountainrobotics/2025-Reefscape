@@ -29,6 +29,8 @@ import frc.robot.subsystems.drive.module.ModuleIOSim;
 import frc.robot.subsystems.drive.module.ModuleIOTalonFX;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIOKraken;
+import frc.robot.subsystems.endEffector.EndEffector;
+import frc.robot.subsystems.endEffector.EndEffectorIOReal;
 import frc.robot.subsystems.vision.*;
 
 /**
@@ -44,7 +46,7 @@ public class RobotContainer {
   public Elevator elevator;
   // public Intake intake;
   // public Climber climber;
-  // public EndEffector endEffector;
+    public EndEffector endEffector;
   // public AutoFactory autoFactory;
 
   // Controller
@@ -78,7 +80,7 @@ public class RobotContainer {
         elevator = new Elevator(new ElevatorIOKraken());
         // intake = new Intake(new IntakeIOReal());
         // climber = new Climber(new ClimberIOReal());
-        // endEffector = new EndEffector(new EndEffectorIOReal());
+        endEffector = new EndEffector(new EndEffectorIOReal());
         //  autoFactory = new AutoFactory(drive::getPose, drive::setPose, drive::followTrajectory,
         // false, drive);
         break;
