@@ -26,12 +26,12 @@ public class ElevatorIOSim implements ElevatorIO {
     leftExtensionMotor.update(LOOP_PERIOD_SECS);
     rightExtensionMotor.update(LOOP_PERIOD_SECS);
 
-    inputs.rightPositionRads = rightExtensionMotor.getAngularPositionRad();
+    inputs.rightPositionRots = rightExtensionMotor.getAngularPositionRad();
     inputs.rightVelocityRadsPerSec = rightExtensionMotor.getAngularVelocityRadPerSec();
     inputs.rightAppliedVoltage = rightExtensionAppliedVoltage;
     inputs.rightSupplyCurrentAmps = rightExtensionMotor.getCurrentDrawAmps();
 
-    inputs.leftPositionRads = leftExtensionMotor.getAngularPositionRad();
+    inputs.leftPositionRots = leftExtensionMotor.getAngularPositionRad();
     inputs.leftVelocityRadsPerSec = leftExtensionMotor.getAngularVelocityRadPerSec();
     inputs.leftAppliedVoltage = leftExtensionAppliedVoltage;
     inputs.rightSupplyCurrentAmps = leftExtensionMotor.getCurrentDrawAmps();

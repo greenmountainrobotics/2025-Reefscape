@@ -14,7 +14,7 @@ public interface ElevatorIO {
   @AutoLog
   class ElevatorIOInputs {
     // Status Signals
-    public double leftPositionRads;
+    public double leftPositionRots;
     public double leftVelocityRadsPerSec;
     public double leftAppliedVoltage;
     public double leftSupplyCurrentAmps;
@@ -22,7 +22,7 @@ public interface ElevatorIO {
     public double leftTempCelsius;
     public double leftPositionTicks;
 
-    public double rightPositionRads;
+    public double rightPositionRots;
     public double rightVelocityRadsPerSec;
     public double rightAppliedVoltage;
     public double rightSupplyCurrentAmps;

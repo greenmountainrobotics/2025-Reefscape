@@ -13,7 +13,8 @@ public class Elevator extends SubsystemBase {
   private final ElevatorIO io;
 
   private final PIDController elevatorPID;
-  private double targetPositionInches = 0;
+  private double gravityVolts = 0; 
+  public double targetPositionInches = 0;
 
   public Elevator(ElevatorIO io) {
     this.io = io;
@@ -21,7 +22,7 @@ public class Elevator extends SubsystemBase {
     elevatorPID =
         new PIDController(
             TunableConstants.KpElevator, TunableConstants.KiElevator, TunableConstants.KdElevator);
-    elevatorPID.setTolerance(100);
+    elevatorPID.setTolerance(0.2);
   }
 
   @Override
@@ -30,26 +31,30 @@ public class Elevator extends SubsystemBase {
     Logger.processInputs("Elevator", inputs);
 
     Logger.recordOutput("Elevator/TargetInches", targetPositionInches);
-    Logger.recordOutput("Elevator/leftPositionRads", inputs.leftPositionRads);
+    Logger.recordOutput("Elevator/TargetRotations", targetPositionInches * MOTOR_ROTATIONS_PER_INCH);
+
+    Logger.recordOutput("Elevator/leftPositionRads", inputs.leftPositionRots);
     Logger.recordOutput("Elevator/leftVelocityRadsPerSec", inputs.leftVelocityRadsPerSec);
     Logger.recordOutput("Elevator/leftAppliedVoltage", inputs.leftAppliedVoltage);
     Logger.recordOutput("Elevator/leftSupplyCurrentAmps", inputs.leftSupplyCurrentAmps);
     Logger.recordOutput("Elevator/leftTempCelsius", inputs.leftTempCelsius);
     Logger.recordOutput("Elevator/leftPositionTicks", inputs.leftPositionTicks);
 
-    Logger.recordOutput("Elevator/rightPositionRads", inputs.rightPositionRads);
+    Logger.recordOutput("Elevator/rightPositionRads", inputs.rightPositionRots);
     Logger.recordOutput("Elevator/rightVelocityRadsPerSec", inputs.rightVelocityRadsPerSec);
     Logger.recordOutput("Elevator/rightAppliedVoltage", inputs.rightAppliedVoltage);
     Logger.recordOutput("Elevator/rightSupplyCurrentAmps", inputs.rightSupplyCurrentAmps);
     Logger.recordOutput("Elevator/rightTempCelsius", inputs.rightTempCelsius);
     Logger.recordOutput("Elevator/rightPositionTicks", inputs.rightPositionTicks);
 
-    io.runVoltage(
-        12 * elevatorPID.calculate(inputs.leftPositionTicks, targetPositionInches * ticksPerInch));
+    gravityVolts = 0.05; 
+
+    io.runVoltage(Math.max(-1.0, Math.min(1.0, (elevatorPID.calculate(inputs.leftPositionTicks, targetPositionInches * MOTOR_ROTATIONS_PER_INCH))+gravityVolts))*12);
   }
 
   public void setPosition(double targetPositionInches) {
     this.targetPositionInches = targetPositionInches;
+
   }
 
   public InstantCommand goToLevelOne() {
@@ -78,5 +83,13 @@ public class Elevator extends SubsystemBase {
 
   public InstantCommand goToCoralPickup() {
     return new InstantCommand(() -> setPosition(levelPickup));
+  }
+
+  public InstantCommand increase() {
+    return new InstantCommand(() -> setPosition(targetPositionInches += 1.0));
+  }
+
+  public InstantCommand decrease() {
+    return new InstantCommand(() -> setPosition(targetPositionInches -= 1.0));
   }
 }

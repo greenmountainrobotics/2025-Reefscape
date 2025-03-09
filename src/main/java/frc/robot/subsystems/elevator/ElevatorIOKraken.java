@@ -48,15 +48,16 @@ public class ElevatorIOKraken implements ElevatorIO {
 
   @Override
   public void updateInputs(ElevatorIOInputs inputs) {
-    inputs.leftPositionRads = elevatorLeft.getPosition().getValueAsDouble();
+    inputs.leftPositionRots = elevatorLeft.getPosition().getValueAsDouble();
+    inputs.leftPositionTicks = elevatorLeft.getPosition().getValueAsDouble();
+
     inputs.leftVelocityRadsPerSec = elevatorLeft.getVelocity().getValueAsDouble();
     inputs.leftAppliedVoltage = elevatorLeft.getMotorVoltage().getValueAsDouble();
     inputs.leftSupplyCurrentAmps = elevatorLeft.getSupplyCurrent().getValueAsDouble();
     inputs.leftTorqueCurrentAmps = elevatorLeft.getTorqueCurrent().getValueAsDouble();
     inputs.leftTempCelsius = elevatorLeft.getDeviceTemp().getValueAsDouble();
-    inputs.leftPositionTicks = elevatorLeft.getPosition().getValueAsDouble();
 
-    inputs.rightPositionRads = elevatorRight.getPosition().getValueAsDouble();
+    inputs.rightPositionRots = elevatorRight.getPosition().getValueAsDouble();
     inputs.rightVelocityRadsPerSec = elevatorRight.getVelocity().getValueAsDouble();
     inputs.rightAppliedVoltage = elevatorRight.getMotorVoltage().getValueAsDouble();
     inputs.rightSupplyCurrentAmps = elevatorRight.getSupplyCurrent().getValueAsDouble();
