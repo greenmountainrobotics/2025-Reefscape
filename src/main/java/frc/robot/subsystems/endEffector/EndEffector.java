@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.constants.EndEffectorConstants;
 import frc.robot.constants.TunableConstants;
 import frc.robot.util.RunMode;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -54,6 +55,8 @@ public class EndEffector extends SubsystemBase {
             new ProfiledPIDController(1, 0, 0.2, new TrapezoidProfile.Constraints(1, 1));
       }
     }
+
+    articulationPID.setTolerance(EndEffectorConstants.ArticulationToleranceRad);
 
     adjustedPos =
         angleModulus((inputs.articulationPosition.minus(AbsoluteEncoderOffset)).getRadians());

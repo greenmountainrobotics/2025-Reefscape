@@ -5,7 +5,7 @@ import static frc.robot.constants.ElevatorConstants.*;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.constants.TunableConstants;
+import frc.robot.constants.ElevatorConstants;
 import org.littletonrobotics.junction.Logger;
 
 public class Elevator extends SubsystemBase {
@@ -20,7 +20,7 @@ public class Elevator extends SubsystemBase {
 
     elevatorPID =
         new PIDController(
-            TunableConstants.KpElevator, TunableConstants.KiElevator, TunableConstants.KdElevator);
+            ElevatorConstants.KpElevator, ElevatorConstants.KiElevator, ElevatorConstants.KdElevator);
     elevatorPID.setTolerance(0.1);
   }
 
@@ -33,6 +33,7 @@ public class Elevator extends SubsystemBase {
     Logger.recordOutput("Elevator/TargetInches", targetPositionInches);
     Logger.recordOutput(
         "Elevator/TargetRotations", targetPositionInches * MOTOR_ROTATIONS_PER_INCH);
+    Logger.recordOutput("Elevator/gravityVolts", gravityVolts);
 
     Logger.recordOutput("Elevator/leftPositionRads", inputs.leftPositionRots);
     Logger.recordOutput("Elevator/leftVelocityRadsPerSec", inputs.leftVelocityRadsPerSec);
@@ -48,7 +49,15 @@ public class Elevator extends SubsystemBase {
     Logger.recordOutput("Elevator/rightTempCelsius", inputs.rightTempCelsius);
     Logger.recordOutput("Elevator/rightPositionTicks", inputs.rightPositionTicks);
 
-    gravityVolts = 0.05;
+
+    // Gravity compensation
+    if (inputs.leftPositionTicks > 0) {
+      gravityVolts = ElevatorConstants.firstStageVoltage;
+    } else if (inputs.leftPositionTicks > ElevatorConstants.secondStageStroke) {  
+      gravityVolts = ElevatorConstants.secondStageVoltage;
+    } else if (inputs.leftPositionTicks > ElevatorConstants.thirdStageStroke) {
+      gravityVolts = ElevatorConstants.thirdStageVoltage;
+    }
 
     io.runVoltage(
         Math.max(
@@ -59,7 +68,7 @@ public class Elevator extends SubsystemBase {
                             inputs.leftPositionTicks,
                             targetPositionInches * MOTOR_ROTATIONS_PER_INCH))
                         + gravityVolts))
-            * 4);
+            * ElevatorConstants.elevatorSpeed);
   }
 
   public void setPosition(double pos) {
