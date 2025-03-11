@@ -21,7 +21,8 @@ public class EndEffectorIOReal implements EndEffectorIO {
   private final SparkMax intakeSpinMotor = new SparkMax(EndEffectorSpinMotorId, MotorType.kBrushed);
   private double Voltage = 0.0;
 
-  private final DigitalInput limitSwitch = new DigitalInput(IdConstants.DIOId.LimitSwitchId);
+  private final DigitalInput limitSwitch =
+      new DigitalInput(IdConstants.DIOId.EndEffectorLimitSwitchId);
   private final AbsoluteEncoder articulationEncoder;
 
   public EndEffectorIOReal() {

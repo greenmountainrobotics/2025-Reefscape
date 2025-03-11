@@ -12,10 +12,18 @@ public final class ElevatorConstants {
 
   public static final double levelGroundInches = 0;
 
+  public static final double maxL1 = 65.0;
+
   public static final double levelOne = 18.0;
   public static final double levelTwo = 31.875;
   public static final double levelThree = 47.625;
   public static final double levelFour = 72.0;
-  public static final double levelBarge = 96.0; // Assuming this is the height needed to interact with the Barge
-  public static final double levelPickup = 10.0; // Assuming this is the height for picking up game pieces
+  public static final double levelBarge =
+      96.0; // Assuming this is the height needed to interact with the Barge 96
+  public static final double levelPickup =
+      10.0; // Assuming this is the height for picking up game pieces
 }
+
+// First stage stroke = 21 inches
+// Second stage stroke = 27
+// third stage stroke = 28

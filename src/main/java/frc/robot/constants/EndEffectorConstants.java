@@ -25,6 +25,6 @@ public class EndEffectorConstants {
   public static final double IntakeSpeed = 1.0;
   public static final double PlacementSpeed = -0.5;
 
-  public static final Rotation2d AbsoluteEncoderOffset = new Rotation2d(0.906 * 2 * Math.PI);
+  public static final Rotation2d AbsoluteEncoderOffset = new Rotation2d(0.545 * 2 * Math.PI);
   // Offset is masured as the rotations when straight up
 }

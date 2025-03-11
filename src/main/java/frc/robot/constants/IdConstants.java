@@ -18,7 +18,9 @@ public final class IdConstants {
   }
 
   public static final class DIOId {
+    public static final int EndEffectorLimitSwitchId = 3;
     public static final int LimitSwitchId = 2;
+
     public static final int IntakeArticulationEncoderId = 3;
   }
 }

@@ -11,9 +11,8 @@ import org.littletonrobotics.junction.Logger;
 public class Elevator extends SubsystemBase {
   private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
   private final ElevatorIO io;
-
   private final PIDController elevatorPID;
-  private double gravityVolts = 0; 
+  private double gravityVolts = 0;
   public double targetPositionInches = 0;
 
   public Elevator(ElevatorIO io) {
@@ -22,16 +21,18 @@ public class Elevator extends SubsystemBase {
     elevatorPID =
         new PIDController(
             TunableConstants.KpElevator, TunableConstants.KiElevator, TunableConstants.KdElevator);
-    elevatorPID.setTolerance(0.2);
+    elevatorPID.setTolerance(0.1);
   }
 
   @Override
   public void periodic() {
+
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
 
     Logger.recordOutput("Elevator/TargetInches", targetPositionInches);
-    Logger.recordOutput("Elevator/TargetRotations", targetPositionInches * MOTOR_ROTATIONS_PER_INCH);
+    Logger.recordOutput(
+        "Elevator/TargetRotations", targetPositionInches * MOTOR_ROTATIONS_PER_INCH);
 
     Logger.recordOutput("Elevator/leftPositionRads", inputs.leftPositionRots);
     Logger.recordOutput("Elevator/leftVelocityRadsPerSec", inputs.leftVelocityRadsPerSec);
@@ -47,14 +48,22 @@ public class Elevator extends SubsystemBase {
     Logger.recordOutput("Elevator/rightTempCelsius", inputs.rightTempCelsius);
     Logger.recordOutput("Elevator/rightPositionTicks", inputs.rightPositionTicks);
 
-    gravityVolts = 0.05; 
+    gravityVolts = 0.05;
 
-    io.runVoltage(Math.max(-1.0, Math.min(1.0, (elevatorPID.calculate(inputs.leftPositionTicks, targetPositionInches * MOTOR_ROTATIONS_PER_INCH))+gravityVolts))*12);
+    io.runVoltage(
+        Math.max(
+                -1.0,
+                Math.min(
+                    1.0,
+                    (elevatorPID.calculate(
+                            inputs.leftPositionTicks,
+                            targetPositionInches * MOTOR_ROTATIONS_PER_INCH))
+                        + gravityVolts))
+            * 4);
   }
 
-  public void setPosition(double targetPositionInches) {
-    this.targetPositionInches = targetPositionInches;
-
+  public void setPosition(double pos) {
+    targetPositionInches = pos;
   }
 
   public InstantCommand goToLevelOne() {
@@ -83,6 +92,10 @@ public class Elevator extends SubsystemBase {
 
   public InstantCommand goToCoralPickup() {
     return new InstantCommand(() -> setPosition(levelPickup));
+  }
+
+  public InstantCommand goToMaxL1() {
+    return new InstantCommand(() -> setPosition(maxL1));
   }
 
   public InstantCommand increase() {

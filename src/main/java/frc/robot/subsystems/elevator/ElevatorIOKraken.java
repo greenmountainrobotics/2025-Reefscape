@@ -63,7 +63,7 @@ public class ElevatorIOKraken implements ElevatorIO {
     inputs.rightSupplyCurrentAmps = elevatorRight.getSupplyCurrent().getValueAsDouble();
     inputs.rightTorqueCurrentAmps = elevatorRight.getTorqueCurrent().getValueAsDouble();
     inputs.rightTempCelsius = elevatorRight.getDeviceTemp().getValueAsDouble();
-    inputs.rightPositionTicks = elevatorLeft.getPosition().getValueAsDouble();
+    inputs.rightPositionTicks = elevatorRight.getPosition().getValueAsDouble();
   }
 
   @Override

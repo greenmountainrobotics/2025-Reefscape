@@ -7,6 +7,7 @@ import static frc.robot.constants.EndEffectorConstants.*;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.*;
@@ -19,6 +20,9 @@ import org.littletonrobotics.junction.Logger;
 public class EndEffector extends SubsystemBase {
   private final EndEffectorIOInputsAutoLogged inputs = new EndEffectorIOInputsAutoLogged();
   private final EndEffectorIO io;
+  boolean isEnabled = false;
+  boolean wasEnabled = false;
+  boolean pidResetDone = false;
 
   private final ProfiledPIDController articulationPID;
 
@@ -52,10 +56,10 @@ public class EndEffector extends SubsystemBase {
     }
 
     adjustedPos =
-    angleModulus((inputs.articulationPosition.minus(AbsoluteEncoderOffset)).getRadians());
+        angleModulus((inputs.articulationPosition.minus(AbsoluteEncoderOffset)).getRadians());
 
     adjustedPos = 90 - adjustedPos * (180 / Math.PI);
-    
+
     setArticulation(Rotation2d.fromDegrees(adjustedPos));
 
     articulationSysId =
@@ -71,6 +75,21 @@ public class EndEffector extends SubsystemBase {
 
   @Override
   public void periodic() {
+
+    isEnabled = RobotState.isEnabled();
+
+    // Pid reset
+    if (isEnabled && !wasEnabled && !pidResetDone) {
+      setArticulation(Rotation2d.fromDegrees(adjustedPos));
+      articulationPID.reset(articulationSetpoint.getDegrees(), 0.0);
+      pidResetDone = true;
+    }
+
+    if (!isEnabled) {
+      pidResetDone = false; // Clear the PID reset flag when disabled
+    }
+
+    wasEnabled = isEnabled;
 
     adjustedPos =
         angleModulus((inputs.articulationPosition.minus(AbsoluteEncoderOffset)).getRadians());
@@ -91,6 +110,9 @@ public class EndEffector extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("EndEffector", inputs);
     Logger.recordOutput("EndEffector/Target Position Rotations", articulationSetpoint);
+    Logger.recordOutput("EndEffector/PID Integral", articulationPID.getAccumulatedError());
+
+    Logger.recordOutput("EndEffector/Reset PID", pidResetDone);
 
     Logger.recordOutput("EndEffector/Target Position Degrees", articulationSetpoint.getDegrees());
 
@@ -131,7 +153,6 @@ public class EndEffector extends SubsystemBase {
 
   }
 
-
   public void setIntakeSpeed(double speed) {
     io.spinRunVoltage(12.0 * speed);
   }
@@ -139,7 +160,7 @@ public class EndEffector extends SubsystemBase {
   public void setArticulation(Rotation2d rotation) {
     articulationSetpoint = rotation;
     articulationPID.setGoal(articulationSetpoint.getDegrees());
-   //articulationPID.reset(articulationSetpoint.getDegrees(), 0.0);
+    // articulationPID.reset(articulationSetpoint.getDegrees(), 0.0);
   }
 
   @AutoLogOutput
