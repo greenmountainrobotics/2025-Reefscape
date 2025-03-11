@@ -56,7 +56,7 @@ public class Robot extends LoggedRobot {
 
   private Command autonomousCommand;
   private RobotContainer robotContainer;
-  private AutoFactory autoFactory;
+  private AutoFactory autoFactory ;
   private AutoChooser autoChooser;
 
   private final Optional<Trajectory<SwerveSample>> trajectory =
