@@ -17,7 +17,7 @@ public class EndEffectorConstants {
       Rotation2d.fromDegrees(180 - 52.993);
   public static final Rotation2d PointingUpArticulation = Rotation2d.fromDegrees(180 - 100.405);*/
 
-  public static final double ArticulationToleranceRad = Math.PI/12;
+  public static final double ArticulationToleranceRad = Math.PI / 12;
 
   public static final double ArticulationVelocity = 0;
   public static final double ArticulationAcceleration = 0;

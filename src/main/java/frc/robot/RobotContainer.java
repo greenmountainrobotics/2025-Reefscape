@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.constants.Constants;
-import frc.robot.constants.EndEffectorConstants;
 import frc.robot.constants.SwerveConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.imu.GyroIO;
@@ -141,15 +140,15 @@ public class RobotContainer {
             () -> -controller1.getRightX()));
 
     // Intake
-    controller2
-        .leftTrigger()
-        .onTrue(
-            endEffector
-                .setShooter(EndEffectorConstants.IntakeSpeed)
-                .andThen(endEffector.RotateCoralPlacement()))
-        .onFalse(endEffector.setShooter(0).andThen(endEffector.RotateCoralPickup()));
+    /*controller2
+    .leftTrigger()
+    .onTrue(
+        endEffector
+            .setShooter(EndEffectorConstants.IntakeSpeed)
+            .andThen(endEffector.RotateCoralPlacement()))
+    .onFalse(endEffector.setShooter(0).andThen(endEffector.RotateCoralPickup()));*/
 
-    controller2.rightTrigger().onTrue(elevator.goToMaxL1()).onFalse(elevator.goToGroundLevel());
+    // controller2.rightTrigger().onTrue(elevator.goToMaxL1()).onFalse(elevator.goToGroundLevel());
     // Elevator
     // Ground Intake
     /*    controller2
