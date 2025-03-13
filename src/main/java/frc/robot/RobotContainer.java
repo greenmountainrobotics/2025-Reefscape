@@ -18,9 +18,12 @@ import static frc.robot.constants.VisionConstants.*;
 
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.constants.Constants;
 import frc.robot.constants.SwerveConstants;
+import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.climber.ClimberIOReal;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.imu.GyroIO;
 import frc.robot.subsystems.drive.imu.GyroIOPigeon2;
@@ -45,7 +48,7 @@ public class RobotContainer {
   public Vision vision;
   public Elevator elevator;
   // public Intake intake;
-  // public Climber climber;
+  public Climber climber;
   public EndEffector endEffector;
   // public AutoFactory autoFactory;
 
@@ -79,7 +82,7 @@ public class RobotContainer {
                 );
         elevator = new Elevator(new ElevatorIOKraken());
         // intake = new Intake(new IntakeIOReal());
-        // climber = new Climber(new ClimberIOReal());
+        climber = new Climber(new ClimberIOReal());
         endEffector = new EndEffector(new EndEffectorIOReal());
         //  autoFactory = new AutoFactory(drive::getPose, drive::setPose, drive::followTrajectory,
         // false, drive);
@@ -119,6 +122,10 @@ public class RobotContainer {
 
         break;
     }
+    SmartDashboard.putNumber("Elevator Voltage", 0.5);
+    SmartDashboard.putNumber("Elevator P", 0.35);
+    SmartDashboard.putNumber("Elevator I", 0.0);
+    SmartDashboard.putNumber("Elevator D", 0.0);
 
     configureButtonBindings();
   }
@@ -148,7 +155,20 @@ public class RobotContainer {
             .andThen(endEffector.RotateCoralPlacement()))
     .onFalse(endEffector.setShooter(0).andThen(endEffector.RotateCoralPickup()));*/
 
-    // controller2.rightTrigger().onTrue(elevator.goToMaxL1()).onFalse(elevator.goToGroundLevel());
+    controller2.rightTrigger().onTrue(elevator.goToMaxL1()).onFalse(elevator.goToGroundLevel());
+
+    // Climber
+
+    controller2.povLeft().whileTrue(climber.setSpeed(0.75)).onFalse(climber.setSpeed(0));
+
+    controller2.povRight().whileTrue(climber.setSpeed(-0.5)).onFalse(climber.setSpeed(0));
+
+    controller2.a().onTrue(elevator.goToLevelOne());
+    controller2.x().onTrue(elevator.goToLevelTwo());
+    controller2.b().onTrue(elevator.goToLevelThree());
+    controller2.y().onTrue(elevator.goToLevelFour());
+    controller2.povDown().onTrue(elevator.goToGroundLevel());
+
     // Elevator
     // Ground Intake
     /*    controller2
