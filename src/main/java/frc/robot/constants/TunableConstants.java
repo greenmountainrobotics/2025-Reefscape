@@ -7,8 +7,6 @@ public final class TunableConstants {
   public static final double KpTheta = 5.0;
   public static final double KdTheta = 0;
 
-
-
   public static final double KpIntakeArticulation = 3;
   public static final double KiIntakeArticulation = 0;
   public static final double KdIntakeArticulation = 0;

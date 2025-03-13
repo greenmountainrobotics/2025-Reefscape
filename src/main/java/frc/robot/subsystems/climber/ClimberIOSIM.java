@@ -39,13 +39,9 @@ public class ClimberIOSIM implements ClimberIO {
   }
 
   @Override
-  public void leftHangRunVoltage(double voltage) {
+  public void setClimbVoltage(double voltage) {
     leftAppliedVolts = voltage;
     leftHangMotorSim.setInputVoltage(voltage);
-  }
-
-  @Override
-  public void rightHangRunVoltage(double voltage) {
     rightAppliedVolts = voltage;
     rightHangMotorSim.setInputVoltage(voltage);
   }

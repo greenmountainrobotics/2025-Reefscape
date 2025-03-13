@@ -12,7 +12,8 @@ public class ClimberIOReal implements ClimberIO {
 
   public ClimberIOReal() {}
 
-  public void setVoltage(double volts) {
+  @Override
+  public void setClimbVoltage(double volts) {
     leftHangMotor.setVoltage(volts);
     rightHangMotor.setVoltage(-volts);
   }
@@ -20,5 +21,11 @@ public class ClimberIOReal implements ClimberIO {
   public void updateInputs(ClimberIOInputs inputs) {
     inputs.leftCurrentAmps = leftHangMotor.getOutputCurrent();
     inputs.rightCurrentAmps = rightHangMotor.getOutputCurrent();
+
+    inputs.leftAppliedVolts = leftHangMotor.getAppliedOutput();
+    inputs.rightAppliedVolts = rightHangMotor.getAppliedOutput();
+
+    inputs.encoderRight = rightHangMotor.getAppliedOutput();
+    inputs.encoderLeft = leftHangMotor.getAppliedOutput();
   }
 }

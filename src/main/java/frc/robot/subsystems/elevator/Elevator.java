@@ -17,10 +17,11 @@ public class Elevator extends SubsystemBase {
 
   public Elevator(ElevatorIO io) {
     this.io = io;
-
     elevatorPID =
         new PIDController(
-            ElevatorConstants.KpElevator, ElevatorConstants.KiElevator, ElevatorConstants.KdElevator);
+            ElevatorConstants.KpElevator,
+            ElevatorConstants.KiElevator,
+            ElevatorConstants.KdElevator);
     elevatorPID.setTolerance(0.1);
   }
 
@@ -35,38 +36,42 @@ public class Elevator extends SubsystemBase {
         "Elevator/TargetRotations", targetPositionInches * MOTOR_ROTATIONS_PER_INCH);
     Logger.recordOutput("Elevator/gravityVolts", gravityVolts);
 
-    Logger.recordOutput("Elevator/leftPositionRads", inputs.leftPositionRots);
+    Logger.recordOutput(
+        "Elevator/positionInches", inputs.leftPositionRots * MOTOR_ROTATIONS_PER_INCH);
+
+    Logger.recordOutput("Elevator/leftPositionRots", inputs.leftPositionRots);
     Logger.recordOutput("Elevator/leftVelocityRadsPerSec", inputs.leftVelocityRadsPerSec);
     Logger.recordOutput("Elevator/leftAppliedVoltage", inputs.leftAppliedVoltage);
     Logger.recordOutput("Elevator/leftSupplyCurrentAmps", inputs.leftSupplyCurrentAmps);
     Logger.recordOutput("Elevator/leftTempCelsius", inputs.leftTempCelsius);
     Logger.recordOutput("Elevator/leftPositionTicks", inputs.leftPositionTicks);
 
-    Logger.recordOutput("Elevator/rightPositionRads", inputs.rightPositionRots);
+    Logger.recordOutput("Elevator/rightPositionRots", inputs.rightPositionRots);
     Logger.recordOutput("Elevator/rightVelocityRadsPerSec", inputs.rightVelocityRadsPerSec);
     Logger.recordOutput("Elevator/rightAppliedVoltage", inputs.rightAppliedVoltage);
     Logger.recordOutput("Elevator/rightSupplyCurrentAmps", inputs.rightSupplyCurrentAmps);
     Logger.recordOutput("Elevator/rightTempCelsius", inputs.rightTempCelsius);
     Logger.recordOutput("Elevator/rightPositionTicks", inputs.rightPositionTicks);
 
-
     // Gravity compensation
-    if (inputs.leftPositionTicks > 0) {
+    if (inputs.leftPositionTicks > 0
+        && inputs.leftPositionTicks < ElevatorConstants.firstStageStroke) {
       gravityVolts = ElevatorConstants.firstStageVoltage;
-    } else if (inputs.leftPositionTicks > ElevatorConstants.secondStageStroke) {  
+    } else if (inputs.leftPositionTicks > ElevatorConstants.firstStageStroke
+        && inputs.leftPositionTicks < ElevatorConstants.secondStageStroke) {
       gravityVolts = ElevatorConstants.secondStageVoltage;
-    } else if (inputs.leftPositionTicks > ElevatorConstants.thirdStageStroke) {
+    } else if (inputs.leftPositionTicks > ElevatorConstants.secondStageStroke) {
       gravityVolts = ElevatorConstants.thirdStageVoltage;
     }
 
+    // io.runVoltage(12 * gravityVolts);
     io.runVoltage(
         Math.max(
                 -1.0,
                 Math.min(
                     1.0,
-                    (elevatorPID.calculate(
-                            inputs.leftPositionTicks,
-                            targetPositionInches * MOTOR_ROTATIONS_PER_INCH))
+                    (ElevatorConstants.voltageMultiplier
+                            * elevatorPID.calculate(inputs.leftPositionTicks, targetPositionInches))
                         + gravityVolts))
             * ElevatorConstants.elevatorSpeed);
   }

@@ -2,12 +2,13 @@ package frc.robot.constants;
 
 public final class ElevatorConstants {
 
-  public static final double elevatorSpeed = 4; //Out of 12 
+  public static final double elevatorSpeed = 4; // Out of 12
   public static double currentLimitAmps = 40.0;
 
-  public static final double KpElevator = 0.1;
-  public static final double KiElevator = 0;
-  public static final double KdElevator = 0;
+  public static final double KpElevator = 0.40;
+  public static final double KiElevator = 0.02;
+  public static final double KdElevator = 0.055;
+  public static final double voltageMultiplier = 0.5;
 
   public static final double GEAR_RATIO = 48.0 / 10.0;
   public static final double SPOOL_DIAMETER = 3.5;
@@ -17,25 +18,22 @@ public final class ElevatorConstants {
 
   public static final double levelGroundInches = 0;
 
-  public static final double maxL1 = 65.0;
+  public static final double maxL1 = 65.0; // 8.3
 
-  public static final double levelOne = 18.0;
-  public static final double levelTwo = 31.875;
-  public static final double levelThree = 47.625;
-  public static final double levelFour = 72.0;
-  public static final double levelBarge =
-      96.0; // Assuming this is the height needed to interact with the Barge 96
-  public static final double levelPickup =
-      10.0; // Assuming this is the height for picking up game pieces
+  public static final double levelOne = 9.0;
+  public static final double levelTwo = 13.13;
+  public static final double levelThree = 19.40;
+  public static final double levelFour = 29.30;
+  public static final double levelBarge = 29.30;
+  public static final double levelPickup = 8.3;
 
-    public static final double firstStageStroke = 21.0;
-    public static final double secondStageStroke = 27.0 + firstStageStroke;
-    public static final double thirdStageStroke = 28.0 + secondStageStroke;
+  public static final double firstStageStroke = 9.138;
+  public static final double secondStageStroke = 19.350;
+  public static final double thirdStageStroke = 30.0; // 29.35
 
-    public static final double firstStageVoltage = 0.02; 
-    public static final double secondStageVoltage = 0.04;
-    public static final double thirdStageVoltage = 0.06;
-
+  public static final double firstStageVoltage = 0.020000 + 0.03;
+  public static final double secondStageVoltage = 0.038000 + 0.03;
+  public static final double thirdStageVoltage = 0.10000 + 0.03;
 }
 
 // First stage stroke = 21 inches
