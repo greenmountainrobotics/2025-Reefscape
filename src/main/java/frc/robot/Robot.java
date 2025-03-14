@@ -14,8 +14,6 @@
 package frc.robot;
 
 import choreo.Choreo;
-import choreo.auto.AutoChooser;
-import choreo.auto.AutoFactory;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -51,8 +49,6 @@ public class Robot extends LoggedRobot {
   // the main mechanism object
   private Command autonomousCommand;
   private RobotContainer robotContainer;
-  private AutoFactory autoFactory;
-  private AutoChooser autoChooser;
   private final Optional<Trajectory<SwerveSample>> trajectory = Choreo.loadTrajectory("New Path");
   private final Timer timer = new Timer();
   private final Drive driveSubsystem = new Drive(null, null, null, null, null);
@@ -170,26 +166,6 @@ public class Robot extends LoggedRobot {
       // Reset and start the timer when the autonomous period begins
       timer.restart();
     }
-
-    // Create the auto chooser
-    // autoChooser = new AutoChooser();
-
-    // Add options to the chooser
-    // autoChooser.addRoutine("Auto Left", this::autoLeft);
-
-    // Put the auto chooser on the dashboard
-    // SmartDashboard.putData(autoChooser);
-
-    // Schedule the selected auto during the autonomous period
-    // RobotModeTriggers.autonomous().whileTrue(autoChooser.selectedCommandScheduler());
-
-    // autonomousCommand = robotContainer.getAutonomousCommand();
-
-    // schedule the autonomous command (example)
-    /*if (autonomousCommand != null) {
-      autonomousCommand.schedule();
-    }*/
-
   }
 
   private boolean isRedAlliance() {
@@ -243,28 +219,4 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {}
-
-  // AUTO--------------------------------------------------------------------------------------------------------------------------
-  /*private AutoRoutine autoLeft() {
-    AutoRoutine routine = autoFactory.newRoutine("main");
-    AutoTrajectory moveOut = routine.trajectory("moveOut");
-    AutoTrajectory moveAgain = routine.trajectory("MoveAgain");
-
-    // When the routine begins, reset odometry and start the first trajectory
-    routine.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
-
-    // Starting at the event marker named "intake", run the intake
-    // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
-
-    // When the trajectory is done, start the next trajectory
-    moveOut.done().onTrue(moveAgain.cmd());
-
-    // While the trajectory is active, prepare the scoring subsystem
-    // scoreTraj.active().whileTrue(scoringSubsystem.getReady());
-
-    // When the trajectory is done, score
-    // scoreTraj.done().onTrue(scoringSubsystem.score());
-
-    return routine;
-  }*/
 }

@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.ElevatorConstants;
+import frc.robot.constants.EndEffectorConstants;
 import frc.robot.constants.TunableConstants;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -71,11 +72,11 @@ public class EndEffector extends SubsystemBase {
     isEnabled = RobotState.isEnabled();
 
     // Pid reset
-    /*if (isEnabled && !wasEnabled && !pidResetDone) {
-      setArticulation(Rotation2d.fromDegrees(adjustedPos));
-      articulationPID.reset(articulationSetpoint.getDegrees(), 0.0);
+    if (isEnabled && !wasEnabled && !pidResetDone) {
+      setArticulation(EndEffectorConstants.CoralPickupRotation);
+      // articulationPID.reset(articulationSetpoint.getDegrees(), 0.0);
       pidResetDone = true;
-    }*/
+    }
 
     if (!isEnabled) {
       pidResetDone = false; // Clear the PID reset flag when disabled

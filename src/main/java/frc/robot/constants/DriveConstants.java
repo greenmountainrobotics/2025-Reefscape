@@ -3,6 +3,11 @@ package frc.robot.constants;
 import static edu.wpi.first.math.util.Units.inchesToMeters;
 
 public final class DriveConstants {
+
+  // Reef aliggnment constants
+  public static final double ReefOffsetX = 0.5;
+  public static final double ReefOffsetY = 0.5;
+
   public static final double TrackWidthY = inchesToMeters(23.750);
   public static final double TrackWidthX = inchesToMeters(23.750);
   public static final double WidthWithBumpersY = inchesToMeters(30.875); // Not Updated

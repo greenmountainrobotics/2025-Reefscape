@@ -16,11 +16,19 @@ package frc.robot;
 import static frc.robot.DriveCommands.*;
 import static frc.robot.constants.VisionConstants.*;
 
+import choreo.auto.AutoChooser;
+import choreo.auto.AutoFactory;
+import choreo.auto.AutoRoutine;
+import choreo.auto.AutoTrajectory;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.constants.Constants;
+import frc.robot.constants.EndEffectorConstants;
 import frc.robot.constants.SwerveConstants;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIOReal;
@@ -50,7 +58,8 @@ public class RobotContainer {
   // public Intake intake;
   public Climber climber;
   public EndEffector endEffector;
-  // public AutoFactory autoFactory;
+  public AutoFactory autoFactory;
+  public AutoChooser autoChooser;
 
   // Controller
   private final CommandXboxController controller1 = new CommandXboxController(0);
@@ -84,8 +93,15 @@ public class RobotContainer {
         // intake = new Intake(new IntakeIOReal());
         climber = new Climber(new ClimberIOReal());
         endEffector = new EndEffector(new EndEffectorIOReal());
-        //  autoFactory = new AutoFactory(drive::getPose, drive::setPose, drive::followTrajectory,
-        // false, drive);
+        autoFactory =
+            new AutoFactory(drive::getPose, drive::setPose, drive::followTrajectory, true, drive);
+        autoChooser = new AutoChooser();
+
+        autoChooser.addRoutine("Basic Left", this::BasicLeft);
+        autoChooser.addRoutine("Basic Middle", this::BasicMiddle);
+        autoChooser.addRoutine("Basic Right", this::BasicRight);
+        SmartDashboard.putData(autoChooser);
+        RobotModeTriggers.autonomous().whileTrue(autoChooser.selectedCommandScheduler());
         break;
 
       case SIM:
@@ -146,20 +162,36 @@ public class RobotContainer {
             () -> -controller1.getLeftX(),
             () -> -controller1.getRightX()));
 
+    climber.setDefaultCommand(
+        new RunCommand(
+            () -> {
+              climber.setSpeed(controller2.getLeftY());
+            },
+            climber));
+
     // Intake
-    /*controller2
-    .leftTrigger()
-    .onTrue(
-        endEffector
-            .setShooter(EndEffectorConstants.IntakeSpeed)
-            .andThen(endEffector.RotateCoralPlacement()))
-    .onFalse(endEffector.setShooter(0).andThen(endEffector.RotateCoralPickup()));*/
+    controller2
+        .leftTrigger()
+        .onTrue(
+            elevator
+                .goToCoralPickup()
+                .andThen(
+                    endEffector
+                        .setShooter(EndEffectorConstants.IntakeSpeed)
+                        .andThen(endEffector.RotateCoralPlacement())))
+        .onFalse(endEffector.setShooter(0));
 
-    controller2.rightTrigger().onTrue(elevator.goToMaxL1()).onFalse(elevator.goToGroundLevel());
+    // Place Coral
+    controller2
+        .rightTrigger()
+        .onTrue(endEffector.setShooter(EndEffectorConstants.PlacementSpeed))
+        .onFalse(endEffector.setShooter(0));
 
-    controller2.povLeft().whileTrue(climber.setSpeed(0.75)).onFalse(climber.setSpeed(0));
+    // Climber Climb
+    // controller2.povLeft().whileTrue(climber.setSpeed(1.0)).onFalse(climber.setSpeed(0));
 
-    controller2.povRight().whileTrue(climber.setSpeed(-0.5)).onFalse(climber.setSpeed(0));
+    // Climber UnClimb
+    // controller2.povRight().whileTrue(climber.setSpeed(-0.5)).onFalse(climber.setSpeed(0));
 
     // Level One Elevator
     controller2.a().onTrue(elevator.goToLevelOne().andThen(endEffector.RotateCoralPlacement()));
@@ -173,9 +205,12 @@ public class RobotContainer {
     controller2
         .povDown()
         .onTrue(elevator.goToGroundLevel().andThen(endEffector.RotateCoralPickup()));
-
     // Barge
     controller2.y().onTrue(elevator.goToLevelFour().andThen(endEffector.RotateBargePlacement()));
+
+    controller2.leftBumper().onTrue((drive.alignToReef(1)));
+
+    controller2.rightBumper().onTrue((drive.alignToReef(2)));
 
     // Elevator
     // Ground Intake
@@ -223,4 +258,88 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
+  // AUTO--------------------------------------------------------------------------------------------------------------------------
+  private AutoRoutine BasicLeft() {
+    AutoRoutine routine = autoFactory.newRoutine("Basic Left");
+    AutoTrajectory moveOut = routine.trajectory("basic_left");
+    // AutoTrajectory moveAgain = routine.trajectory("basic_left_leave"); //basic left leave
+
+    // When the routine begins, reset odometry and start the first trajectory
+    routine.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
+
+    // Starting at the event marker named "intake", run the intake
+    // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
+    moveOut
+        .done()
+        .onTrue(
+            endEffector
+                .RotateCoralPlacement()
+                .alongWith(endEffector.setShooter(EndEffectorConstants.PlacementSpeed)));
+    // When the trajectory is done, start the next trajectory
+    // moveOut.done().onTrue(moveAgain.cmd());
+
+    // While the trajectory is active, prepare the scoring subsystem
+    // scoreTraj.active().whileTrue(scoringSubsystem.getReady());
+
+    // When the trajectory is done, score
+    // scoreTraj.done().onTrue(scoringSubsystem.score());
+
+    return routine;
+  }
+
+  private AutoRoutine BasicMiddle() {
+    AutoRoutine routine = autoFactory.newRoutine("Basic Middle");
+    AutoTrajectory moveOut = routine.trajectory("basic_middle");
+    // AutoTrajectory moveAgain = routine.trajectory("basic_left_leave"); //basic left leave
+
+    // When the routine begins, reset odometry and start the first trajectory
+    routine.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
+
+    // Starting at the event marker named "intake", run the intake
+    // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
+    moveOut
+        .done()
+        .onTrue(
+            endEffector
+                .RotateCoralPlacement()
+                .alongWith(endEffector.setShooter(EndEffectorConstants.PlacementSpeed)));
+    // When the trajectory is done, start the next trajectory
+    // moveOut.done().onTrue(moveAgain.cmd());
+
+    // While the trajectory is active, prepare the scoring subsystem
+    // scoreTraj.active().whileTrue(scoringSubsystem.getReady());
+
+    // When the trajectory is done, score
+    // scoreTraj.done().onTrue(scoringSubsystem.score());
+
+    return routine;
+  }
+
+  private AutoRoutine BasicRight() {
+    AutoRoutine routine = autoFactory.newRoutine("Basic Right");
+    AutoTrajectory moveOut = routine.trajectory("basic_right");
+    // AutoTrajectory moveAgain = routine.trajectory("basic_left_leave"); //basic left leave
+
+    // When the routine begins, reset odometry and start the first trajectory
+    routine.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
+
+    // Starting at the event marker named "intake", run the intake
+    // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
+    moveOut
+        .done()
+        .onTrue(
+            endEffector
+                .RotateCoralPlacement()
+                .alongWith(endEffector.setShooter(EndEffectorConstants.PlacementSpeed)));
+    // When the trajectory is done, start the next trajectory
+    // moveOut.done().onTrue(moveAgain.cmd());
+
+    // While the trajectory is active, prepare the scoring subsystem
+    // scoreTraj.active().whileTrue(scoringSubsystem.getReady());
+
+    // When the trajectory is done, score
+    // scoreTraj.done().onTrue(scoringSubsystem.score());
+
+    return routine;
+  }
 }

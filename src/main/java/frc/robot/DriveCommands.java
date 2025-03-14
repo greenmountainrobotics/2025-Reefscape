@@ -63,17 +63,6 @@ public class DriveCommands {
         .getTranslation();
   }
 
-  /*  public static Command PlaceOnReef(
-      Elevator elevator, Drive drive, EndEffector endEffector, boolean align) {
-    return new ConditionalCommand(
-            new WaitUntilCommand(
-                () -> drive.closestFace() < DriveConstants.ReefPlacingDistance + 0.2),
-            new InstantCommand(() -> {}),
-            () -> align)
-        .alongWith(
-            new ConditionalCommand(drive.alignToReef(), new InstantCommand(() -> {}), () -> align));
-  }*/
-
   /**
    * Field relative drive command using two joysticks (controlling linear and angular velocities).
    */

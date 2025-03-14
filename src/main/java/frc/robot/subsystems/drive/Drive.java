@@ -466,6 +466,28 @@ public class Drive extends SubsystemBase {
     return closestFaceIndex; // Return the index of the closest face
   }
 
+  public static Pose2d getOffsetPose(Pose2d tagPose, int direction) {
+    return getOffsetPose(
+        tagPose, DriveConstants.ReefOffsetX, DriveConstants.ReefOffsetY, direction);
+  }
+
+  public static Pose2d getOffsetPose(Pose2d tagPose, double x, double y, int direction) {
+    if (direction == 2) {
+      x = -x; // Flip x if direction is 2
+    }
+
+    Rotation2d rotation = tagPose.getRotation();
+    double angle = rotation.getRadians();
+
+    // Compute offsets using rotation
+    double deltaX = x * Math.cos(angle) - y * Math.sin(angle);
+    double deltaY = x * Math.sin(angle) + y * Math.cos(angle);
+
+    // Create new translated pose
+    Translation2d newTranslation = tagPose.getTranslation().plus(new Translation2d(deltaX, deltaY));
+    return new Pose2d(newTranslation, rotation);
+  }
+
   public Command runToPose(Supplier<Pose2d> targetPoseSupplier, boolean stop) {
     return new InstantCommand(() -> Leds.State.DrivingToPose = true)
         .andThen(
@@ -585,8 +607,10 @@ public class Drive extends SubsystemBase {
     ALIGNING_TO_INTAKE
   }
 
-  public Command alignToReef() {
+  public Command alignToReef(int index) {
     Pose2d targetFace = FieldConstants.Reef.centerFaces[closestFace()];
+    Pose2d offsetPose = getOffsetPose(targetFace, index);
+
     return new InstantCommand(() -> setState(DriveState.ALIGNING_TO_REEF))
         .andThen(
             new DeferredCommand(
@@ -596,12 +620,12 @@ public class Drive extends SubsystemBase {
                           getPose()
                               .getTranslation()
                               .minus(
-                                  FieldPoseUtils.flipTranslationIfRed(targetFace.getTranslation()))
+                                  FieldPoseUtils.flipTranslationIfRed(offsetPose.getTranslation()))
                               .getAngle()
                               .getRadians());
 
                   var targetTranslation =
-                      FieldPoseUtils.flipTranslationIfRed(targetFace.getTranslation())
+                      FieldPoseUtils.flipTranslationIfRed(offsetPose.getTranslation())
                           .plus(
                               new Translation2d(
                                       SmartDashboard.getNumber(
