@@ -16,26 +16,22 @@ package frc.robot;
 import choreo.Choreo;
 import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
-import choreo.auto.AutoRoutine;
-import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.DriveMotorArrangement;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerMotorArrangement;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.constants.BuildConstants;
 import frc.robot.constants.Constants;
 import frc.robot.constants.SwerveConstants;
+import frc.robot.subsystems.drive.Drive;
 import java.util.Optional;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -53,28 +49,25 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
   // Smartdash board
   // the main mechanism object
-
   private Command autonomousCommand;
   private RobotContainer robotContainer;
   private AutoFactory autoFactory;
   private AutoChooser autoChooser;
-
-  private final Optional<Trajectory<SwerveSample>> trajectory =
-      Choreo.loadTrajectory("myTrajectory");
+  private final Optional<Trajectory<SwerveSample>> trajectory = Choreo.loadTrajectory("New Path");
   private final Timer timer = new Timer();
-
+  private final Drive driveSubsystem = new Drive(null, null, null, null, null);
   // the main mechanism object
 
-  Mechanism2d mech = new Mechanism2d(3, 3);
-  // the mechanism root node
-  MechanismRoot2d root = mech.getRoot("wrist", 2, 1);
-  MechanismLigament2d elevtatorLig = new MechanismLigament2d("elevator", 5, 90);
-  MechanismLigament2d wristLig = new MechanismLigament2d("wrist", 1, 0);
-
+  /*Mechanism2d mech = new Mechanism2d(3, 3);
+    // the mechanism root node
+    MechanismRoot2d root = mech.getRoot("wrist", 2, 1);
+    MechanismLigament2d elevtatorLig = new MechanismLigament2d("elevator", 5, 90);
+    MechanismLigament2d wristLig = new MechanismLigament2d("wrist", 1, 0);
+  */
   public Robot() {
-    // Robot Sim Mechs
+    /* Robot Sim Mechs
     elevtatorLig = root.append(new MechanismLigament2d("elevator", 1, 90));
-    wristLig = root.append(new MechanismLigament2d("wrist", 1, 0));
+    wristLig = root.append(new MechanismLigament2d("wrist", 1, 0)); */
 
     // Record metadata
     Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
@@ -82,7 +75,7 @@ public class Robot extends LoggedRobot {
     Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
     Logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
     Logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
-    SmartDashboard.putData("Mech2d", mech);
+    // SmartDashboard.putData("Mech2d", mech);
 
     switch (BuildConstants.DIRTY) {
       case 0:
@@ -170,17 +163,25 @@ public class Robot extends LoggedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+
+    if (trajectory.isPresent()) {
+      // Get the initial pose of the trajectory
+      Optional<Pose2d> initialPose = trajectory.get().getInitialPose(isRedAlliance());
+      // Reset and start the timer when the autonomous period begins
+      timer.restart();
+    }
+
     // Create the auto chooser
-    autoChooser = new AutoChooser();
+    // autoChooser = new AutoChooser();
 
     // Add options to the chooser
-    autoChooser.addRoutine("Auto Left", this::autoLeft);
+    // autoChooser.addRoutine("Auto Left", this::autoLeft);
 
     // Put the auto chooser on the dashboard
-    SmartDashboard.putData(autoChooser);
+    // SmartDashboard.putData(autoChooser);
 
     // Schedule the selected auto during the autonomous period
-    RobotModeTriggers.autonomous().whileTrue(autoChooser.selectedCommandScheduler());
+    // RobotModeTriggers.autonomous().whileTrue(autoChooser.selectedCommandScheduler());
 
     // autonomousCommand = robotContainer.getAutonomousCommand();
 
@@ -191,9 +192,22 @@ public class Robot extends LoggedRobot {
 
   }
 
+  private boolean isRedAlliance() {
+    return DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red);
+  }
+
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    if (trajectory.isPresent()) {
+      // Sample the trajectory at the current time into the autonomous period
+      Optional<SwerveSample> sample = trajectory.get().sampleAt(timer.get(), isRedAlliance());
+
+      if (sample.isPresent()) {
+        driveSubsystem.followTrajectory(sample.get());
+      }
+    }
+  }
 
   /** This function is called once when teleop is enabled. */
   @Override
@@ -231,19 +245,19 @@ public class Robot extends LoggedRobot {
   public void simulationPeriodic() {}
 
   // AUTO--------------------------------------------------------------------------------------------------------------------------
-  private AutoRoutine autoLeft() {
-    AutoRoutine routine = autoFactory.newRoutine("AutoLeft");
-    AutoTrajectory pickupTraj = routine.trajectory("pickupGamepiece");
-    AutoTrajectory scoreTraj = routine.trajectory("scoreGamepiece");
+  /*private AutoRoutine autoLeft() {
+    AutoRoutine routine = autoFactory.newRoutine("main");
+    AutoTrajectory moveOut = routine.trajectory("moveOut");
+    AutoTrajectory moveAgain = routine.trajectory("MoveAgain");
 
     // When the routine begins, reset odometry and start the first trajectory
-    routine.active().onTrue(Commands.sequence(pickupTraj.resetOdometry(), pickupTraj.cmd()));
+    routine.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
 
     // Starting at the event marker named "intake", run the intake
     // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
 
     // When the trajectory is done, start the next trajectory
-    pickupTraj.done().onTrue(scoreTraj.cmd());
+    moveOut.done().onTrue(moveAgain.cmd());
 
     // While the trajectory is active, prepare the scoring subsystem
     // scoreTraj.active().whileTrue(scoringSubsystem.getReady());
@@ -252,5 +266,5 @@ public class Robot extends LoggedRobot {
     // scoreTraj.done().onTrue(scoringSubsystem.score());
 
     return routine;
-  }
+  }*/
 }
