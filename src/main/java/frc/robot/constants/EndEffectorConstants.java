@@ -17,7 +17,7 @@ public class EndEffectorConstants {
       Rotation2d.fromDegrees(180 - 52.993);
   public static final Rotation2d PointingUpArticulation = Rotation2d.fromDegrees(180 - 100.405);*/
 
-  public static final double ArticulationToleranceRad = Math.PI / 12;
+  public static final double ArticulationToleranceRad = Math.toRadians(20);
 
   public static final double ArticulationVelocity = 0;
   public static final double ArticulationAcceleration = 0;
@@ -25,6 +25,6 @@ public class EndEffectorConstants {
   public static final double IntakeSpeed = 1.0;
   public static final double PlacementSpeed = -0.5;
 
-  public static final Rotation2d AbsoluteEncoderOffset = new Rotation2d(0.545 * 2 * Math.PI);
+  public static final Rotation2d AbsoluteEncoderOffset = new Rotation2d(0.602 * 2 * Math.PI);
   // Offset is masured as the rotations when straight up
 }

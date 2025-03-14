@@ -16,6 +16,7 @@ public class Elevator extends SubsystemBase {
   public double targetPositionInches = 0;
 
   public Elevator(ElevatorIO io) {
+
     this.io = io;
     elevatorPID =
         new PIDController(
@@ -65,15 +66,16 @@ public class Elevator extends SubsystemBase {
     }
 
     // io.runVoltage(12 * gravityVolts);
-    io.runVoltage(
-        Math.max(
-                -1.0,
-                Math.min(
-                    1.0,
-                    (ElevatorConstants.voltageMultiplier
-                            * elevatorPID.calculate(inputs.leftPositionTicks, targetPositionInches))
-                        + gravityVolts))
-            * ElevatorConstants.elevatorSpeed);
+    /*io.runVoltage(
+    Math.max(
+            -1.0,
+            Math.min(
+                1.0,
+                (ElevatorConstants.voltageMultiplier
+                        * elevatorPID.calculate(inputs.leftPositionTicks, targetPositionInches))
+                    + gravityVolts))
+        * ElevatorConstants.elevatorSpeed);*/
+    io.runVoltage(0);
   }
 
   public void setPosition(double pos) {

@@ -123,10 +123,10 @@ public class RobotContainer {
 
         break;
     }
-    SmartDashboard.putNumber("Elevator Voltage", 0.5);
-    SmartDashboard.putNumber("Elevator P", 0.35);
-    SmartDashboard.putNumber("Elevator I", 0.0);
-    SmartDashboard.putNumber("Elevator D", 0.0);
+    SmartDashboard.putNumber("End Voltage", 0.5);
+    SmartDashboard.putNumber("End P", 0.03);
+    SmartDashboard.putNumber("End I", 0.0);
+    SmartDashboard.putNumber("End D", 0.0);
 
     configureButtonBindings();
   }
@@ -158,17 +158,25 @@ public class RobotContainer {
 
     controller2.rightTrigger().onTrue(elevator.goToMaxL1()).onFalse(elevator.goToGroundLevel());
 
-    // Climber
-
     controller2.povLeft().whileTrue(climber.setSpeed(0.75)).onFalse(climber.setSpeed(0));
 
     controller2.povRight().whileTrue(climber.setSpeed(-0.5)).onFalse(climber.setSpeed(0));
 
-    controller2.a().onTrue(elevator.goToLevelOne());
-    controller2.x().onTrue(elevator.goToLevelTwo());
-    controller2.b().onTrue(elevator.goToLevelThree());
-    controller2.y().onTrue(elevator.goToLevelFour());
-    controller2.povDown().onTrue(elevator.goToGroundLevel());
+    // Level One Elevator
+    controller2.a().onTrue(elevator.goToLevelOne().andThen(endEffector.RotateCoralPlacement()));
+    // Level Two Elevator
+    controller2.x().onTrue(elevator.goToLevelTwo().andThen(endEffector.RotateCoralPlacement()));
+    // Level Three Elevator
+    controller2.b().onTrue(elevator.goToLevelThree().andThen(endEffector.RotateCoralPlacement()));
+    // Level Four Elevator
+    controller2.y().onTrue(elevator.goToLevelFour().andThen(endEffector.RotateCoralL4Placement()));
+    // Ground Level
+    controller2
+        .povDown()
+        .onTrue(elevator.goToGroundLevel().andThen(endEffector.RotateCoralPickup()));
+
+    // Barge
+    controller2.y().onTrue(elevator.goToLevelFour().andThen(endEffector.RotateBargePlacement()));
 
     // Elevator
     // Ground Intake

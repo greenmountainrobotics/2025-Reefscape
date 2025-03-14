@@ -31,9 +31,9 @@ public final class ElevatorConstants {
   public static final double secondStageStroke = 19.350;
   public static final double thirdStageStroke = 30.0; // 29.35
 
-  public static final double firstStageVoltage = 0.020000 + 0.03;
-  public static final double secondStageVoltage = 0.038000 + 0.03;
-  public static final double thirdStageVoltage = 0.10000 + 0.03;
+  public static final double firstStageVoltage = 0.020000;
+  public static final double secondStageVoltage = 0.038000;
+  public static final double thirdStageVoltage = 0.10000;
 }
 
 // First stage stroke = 21 inches

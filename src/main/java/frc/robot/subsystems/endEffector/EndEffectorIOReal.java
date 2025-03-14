@@ -48,7 +48,7 @@ public class EndEffectorIOReal implements EndEffectorIO {
 
   @Override
   public void articulationRunVoltage(double voltage) {
-    intakeRotateMotor.setVoltage(voltage * 12);
+    intakeRotateMotor.setVoltage(voltage);
   }
 
   @Override

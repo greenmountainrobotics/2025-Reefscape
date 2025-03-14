@@ -11,8 +11,9 @@ public final class TunableConstants {
   public static final double KiIntakeArticulation = 0;
   public static final double KdIntakeArticulation = 0;
 
-  public static final double KpEndEffectorArticulation = 0.03;
+  public static final double KpEndEffectorArticulation = 0.07;
   public static final double KiEndEffectorArticulation = 0.0;
   public static final double KdEndEffectorArticulation = 0.0;
-  public static final double KgEndEffectorArticulation = 0.01; // 0.01
+  public static final double KgEndEffectorArticulation = 0.0; // 0.01
+  public static final double KpEndEffectorSpeed = 6;
 }
