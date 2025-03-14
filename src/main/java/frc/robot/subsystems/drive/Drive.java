@@ -62,8 +62,6 @@ import frc.robot.subsystems.drive.imu.GyroIOInputsAutoLogged;
 import frc.robot.subsystems.drive.module.Module;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.leds.Leds;
-import frc.robot.util.FieldPoseUtils;
-import frc.robot.util.MyAlliance;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -607,7 +605,7 @@ public class Drive extends SubsystemBase {
     ALIGNING_TO_INTAKE
   }
 
-  public Command alignToReef(int index) {
+  /*public Command alignToReef(int index) {
     Pose2d targetFace = FieldConstants.Reef.centerFaces[closestFace()];
     Pose2d offsetPose = getOffsetPose(targetFace, index);
 
@@ -657,7 +655,7 @@ public class Drive extends SubsystemBase {
                 },
                 Set.of(this)))
         .finallyDo(() -> setState(DriveState.NONE));
-  }
+  }*/
 
   /*public Command alignToNote(Translation2d noteTranslation) {
     return new DeferredCommand(

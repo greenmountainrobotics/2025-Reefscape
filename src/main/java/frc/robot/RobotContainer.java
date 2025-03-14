@@ -208,9 +208,9 @@ public class RobotContainer {
     // Barge
     controller2.y().onTrue(elevator.goToLevelFour().andThen(endEffector.RotateBargePlacement()));
 
-    controller2.leftBumper().onTrue((drive.alignToReef(1)));
+    // controller2.leftBumper().onTrue((drive.alignToReef(1)));
 
-    controller2.rightBumper().onTrue((drive.alignToReef(2)));
+    // controller2.rightBumper().onTrue((drive.alignToReef(2)));
 
     // Elevator
     // Ground Intake
