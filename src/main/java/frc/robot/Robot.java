@@ -29,7 +29,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.constants.BuildConstants;
 import frc.robot.constants.Constants;
 import frc.robot.constants.SwerveConstants;
-import frc.robot.subsystems.drive.Drive;
 import java.util.Optional;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -51,7 +50,7 @@ public class Robot extends LoggedRobot {
   private RobotContainer robotContainer;
   private final Optional<Trajectory<SwerveSample>> trajectory = Choreo.loadTrajectory("New Path");
   private final Timer timer = new Timer();
-  private final Drive driveSubsystem = new Drive(null, null, null, null, null);
+  //  private final Drive driveSubsystem = new Drive(null, null, null, null, null);
   // the main mechanism object
 
   /*Mechanism2d mech = new Mechanism2d(3, 3);
@@ -180,7 +179,7 @@ public class Robot extends LoggedRobot {
       Optional<SwerveSample> sample = trajectory.get().sampleAt(timer.get(), isRedAlliance());
 
       if (sample.isPresent()) {
-        driveSubsystem.followTrajectory(sample.get());
+        //    driveSubsystem.followTrajectory(sample.get());
       }
     }
   }

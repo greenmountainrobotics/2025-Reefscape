@@ -24,7 +24,6 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.constants.Constants;
@@ -36,7 +35,6 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.imu.GyroIO;
 import frc.robot.subsystems.drive.imu.GyroIOPigeon2;
 import frc.robot.subsystems.drive.module.ModuleIO;
-import frc.robot.subsystems.drive.module.ModuleIOSim;
 import frc.robot.subsystems.drive.module.ModuleIOTalonFX;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIOKraken;
@@ -100,19 +98,12 @@ public class RobotContainer {
         autoChooser.addRoutine("Basic Left", this::BasicLeft);
         autoChooser.addRoutine("Basic Middle", this::BasicMiddle);
         autoChooser.addRoutine("Basic Right", this::BasicRight);
-        SmartDashboard.putData(autoChooser);
+        SmartDashboard.putData("AutoChooser", autoChooser);
         RobotModeTriggers.autonomous().whileTrue(autoChooser.selectedCommandScheduler());
         break;
 
       case SIM:
-        // Sim robot, instantiate physics sim IO implementations
-        drive =
-            new Drive(
-                new GyroIO() {},
-                new ModuleIOSim(SwerveConstants.FrontLeft),
-                new ModuleIOSim(SwerveConstants.FrontRight),
-                new ModuleIOSim(SwerveConstants.BackLeft),
-                new ModuleIOSim(SwerveConstants.BackRight));
+        // Sim robot, instantiate physics sim IO implementationss
 
         vision =
             new Vision(
@@ -138,10 +129,6 @@ public class RobotContainer {
 
         break;
     }
-    SmartDashboard.putNumber("End Voltage", 0.5);
-    SmartDashboard.putNumber("End P", 0.03);
-    SmartDashboard.putNumber("End I", 0.0);
-    SmartDashboard.putNumber("End D", 0.0);
 
     configureButtonBindings();
   }
@@ -162,12 +149,12 @@ public class RobotContainer {
             () -> -controller1.getLeftX(),
             () -> -controller1.getRightX()));
 
-    climber.setDefaultCommand(
-        new RunCommand(
-            () -> {
-              climber.setSpeed(controller2.getLeftY());
-            },
-            climber));
+    /*   climber.setDefaultCommand(
+    new RunCommand(
+        () -> {
+          climber.setSpeed(controller2.getLeftY());
+        },
+        climber));*/
 
     // Intake
     controller2
@@ -178,7 +165,7 @@ public class RobotContainer {
                 .andThen(
                     endEffector
                         .setShooter(EndEffectorConstants.IntakeSpeed)
-                        .andThen(endEffector.RotateCoralPlacement())))
+                        .andThen(endEffector.RotateCoralPickup())))
         .onFalse(endEffector.setShooter(0));
 
     // Place Coral
@@ -188,14 +175,14 @@ public class RobotContainer {
         .onFalse(endEffector.setShooter(0));
 
     // Climber Climb
-    // controller2.povLeft().whileTrue(climber.setSpeed(1.0)).onFalse(climber.setSpeed(0));
+    controller2.povLeft().whileTrue(climber.setSpeed(1.0)).onFalse(climber.setSpeed(0));
 
     // Climber UnClimb
-    // controller2.povRight().whileTrue(climber.setSpeed(-0.5)).onFalse(climber.setSpeed(0));
+    controller2.povRight().whileTrue(climber.setSpeed(-0.5)).onFalse(climber.setSpeed(0));
 
     // Level One Elevator
-    controller2.a().onTrue(elevator.goToLevelOne().andThen(endEffector.RotateCoralPlacement()));
-    // Level Two Elevator
+    controller2.a().onTrue(elevator.goToLevelOne().andThen(endEffector.RotateTroftPlacement()));
+    //    // Level Two Elevator
     controller2.x().onTrue(elevator.goToLevelTwo().andThen(endEffector.RotateCoralPlacement()));
     // Level Three Elevator
     controller2.b().onTrue(elevator.goToLevelThree().andThen(endEffector.RotateCoralPlacement()));
@@ -206,11 +193,15 @@ public class RobotContainer {
         .povDown()
         .onTrue(elevator.goToGroundLevel().andThen(endEffector.RotateCoralPickup()));
     // Barge
-    controller2.y().onTrue(elevator.goToLevelFour().andThen(endEffector.RotateBargePlacement()));
+    controller2
+        .povUp()
+        .onTrue(elevator.goToLevelFour().andThen(endEffector.RotateBargePlacement()));
 
-    // controller2.leftBumper().onTrue((drive.alignToReef(1)));
+    controller2.leftBumper().whileTrue((drive.alignToReef(1)));
 
-    // controller2.rightBumper().onTrue((drive.alignToReef(2)));
+    controller2.rightBumper().whileTrue((drive.alignToReef(2)));
+
+    controller1.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
     // Elevator
     // Ground Intake
@@ -238,7 +229,6 @@ public class RobotContainer {
                     () -> new Rotation2d()));
 
         // Switch to X pattern when X button is pressed
-        controller1.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
         // Reset gyro to 0° when B button is pressed
         controller1
@@ -260,12 +250,12 @@ public class RobotContainer {
    */
   // AUTO--------------------------------------------------------------------------------------------------------------------------
   private AutoRoutine BasicLeft() {
-    AutoRoutine routine = autoFactory.newRoutine("Basic Left");
-    AutoTrajectory moveOut = routine.trajectory("basic_left");
-    // AutoTrajectory moveAgain = routine.trajectory("basic_left_leave"); //basic left leave
+    AutoRoutine basic_left = autoFactory.newRoutine("Basic Left");
+    AutoTrajectory moveOut = basic_left.trajectory("basic_left_start");
+    // AutoTrajectory moveReturn = basic_left.trajectory("basic_left_return");
 
     // When the routine begins, reset odometry and start the first trajectory
-    routine.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
+    basic_left.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
 
     // Starting at the event marker named "intake", run the intake
     // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
@@ -275,6 +265,7 @@ public class RobotContainer {
             endEffector
                 .RotateCoralPlacement()
                 .alongWith(endEffector.setShooter(EndEffectorConstants.PlacementSpeed)));
+
     // When the trajectory is done, start the next trajectory
     // moveOut.done().onTrue(moveAgain.cmd());
 
@@ -284,16 +275,17 @@ public class RobotContainer {
     // When the trajectory is done, score
     // scoreTraj.done().onTrue(scoringSubsystem.score());
 
-    return routine;
+    return basic_left;
   }
 
   private AutoRoutine BasicMiddle() {
-    AutoRoutine routine = autoFactory.newRoutine("Basic Middle");
-    AutoTrajectory moveOut = routine.trajectory("basic_middle");
-    // AutoTrajectory moveAgain = routine.trajectory("basic_left_leave"); //basic left leave
+    AutoRoutine basic_middle = autoFactory.newRoutine("Basic Middle");
+    AutoTrajectory moveOut = basic_middle.trajectory("basic_middle_start");
+    // AutoTrajectory moveReturn = basic_middle.trajectory("basic_middle_return"); // basic left
+    // leave
 
     // When the routine begins, reset odometry and start the first trajectory
-    routine.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
+    basic_middle.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
 
     // Starting at the event marker named "intake", run the intake
     // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
@@ -312,16 +304,16 @@ public class RobotContainer {
     // When the trajectory is done, score
     // scoreTraj.done().onTrue(scoringSubsystem.score());
 
-    return routine;
+    return basic_middle;
   }
 
   private AutoRoutine BasicRight() {
-    AutoRoutine routine = autoFactory.newRoutine("Basic Right");
-    AutoTrajectory moveOut = routine.trajectory("basic_right");
-    // AutoTrajectory moveAgain = routine.trajectory("basic_left_leave"); //basic left leave
+    AutoRoutine basic_right = autoFactory.newRoutine("Basic Right");
+    AutoTrajectory moveOut = basic_right.trajectory("basic_right_start");
+    //  AutoTrajectory moveReturn = basic_right.trajectory("basic_left_leave"); // basic left leave
 
     // When the routine begins, reset odometry and start the first trajectory
-    routine.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
+    basic_right.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
 
     // Starting at the event marker named "intake", run the intake
     // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
@@ -340,6 +332,6 @@ public class RobotContainer {
     // When the trajectory is done, score
     // scoreTraj.done().onTrue(scoringSubsystem.score());
 
-    return routine;
+    return basic_right;
   }
 }

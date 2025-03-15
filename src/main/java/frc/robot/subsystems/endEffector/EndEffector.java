@@ -227,4 +227,12 @@ public class EndEffector extends SubsystemBase {
         },
         this);
   }
+
+  public Command RotateTroftPlacement() {
+    return new InstantCommand(
+        () -> {
+          setArticulation(TroftPlacementRotation);
+        },
+        this);
+  }
 }

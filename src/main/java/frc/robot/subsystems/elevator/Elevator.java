@@ -23,7 +23,7 @@ public class Elevator extends SubsystemBase {
             ElevatorConstants.KpElevator,
             ElevatorConstants.KiElevator,
             ElevatorConstants.KdElevator);
-    elevatorPID.setTolerance(0.1);
+    elevatorPID.setTolerance(0.01);
   }
 
   @Override
@@ -66,16 +66,16 @@ public class Elevator extends SubsystemBase {
     }
 
     // io.runVoltage(12 * gravityVolts);
-    /*io.runVoltage(
-    Math.max(
-            -1.0,
-            Math.min(
-                1.0,
-                (ElevatorConstants.voltageMultiplier
-                        * elevatorPID.calculate(inputs.leftPositionTicks, targetPositionInches))
-                    + gravityVolts))
-        * ElevatorConstants.elevatorSpeed);*/
-    io.runVoltage(0);
+    io.runVoltage(
+        Math.max(
+                -1.0,
+                Math.min(
+                    1.0,
+                    (ElevatorConstants.voltageMultiplier
+                            * elevatorPID.calculate(inputs.leftPositionTicks, targetPositionInches))
+                        + gravityVolts))
+            * ElevatorConstants.elevatorSpeed);
+    //  io.runVoltage(0);
   }
 
   public void setPosition(double pos) {

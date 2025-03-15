@@ -20,12 +20,12 @@ public final class ElevatorConstants {
 
   public static final double maxL1 = 65.0; // 8.3
 
-  public static final double levelOne = 9.0;
-  public static final double levelTwo = 13.13;
-  public static final double levelThree = 19.40;
-  public static final double levelFour = 29.30;
-  public static final double levelBarge = 29.30;
-  public static final double levelPickup = 8.3;
+  public static final double levelOne = 9.0 - 1.1;
+  public static final double levelTwo = 13.13 - 1.1;
+  public static final double levelThree = 19.40 - 1.1;
+  public static final double levelFour = 28.2;
+  public static final double levelBarge = 28.2;
+  public static final double levelPickup = 7.3;
 
   public static final double firstStageStroke = 9.138;
   public static final double secondStageStroke = 19.350;
