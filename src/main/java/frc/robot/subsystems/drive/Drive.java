@@ -52,10 +52,10 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.constants.AprilTagConstants;
 import frc.robot.constants.Constants;
 import frc.robot.constants.Constants.Mode;
 import frc.robot.constants.DriveConstants;
-import frc.robot.constants.FieldConstants;
 import frc.robot.constants.SwerveConstants;
 import frc.robot.subsystems.drive.imu.GyroIO;
 import frc.robot.subsystems.drive.imu.GyroIOInputsAutoLogged;
@@ -267,6 +267,36 @@ public class Drive extends SubsystemBase {
     Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
   }
 
+  public void runRelativeVelocity(ChassisSpeeds speeds) {
+    // Get current robot heading from odometry
+    Rotation2d robotAngle = getPose().getRotation();
+
+    // Convert from field-relative to robot-relative
+    ChassisSpeeds robotRelativeSpeeds =
+        ChassisSpeeds.fromFieldRelativeSpeeds(
+            speeds.vxMetersPerSecond,
+            speeds.vyMetersPerSecond,
+            speeds.omegaRadiansPerSecond,
+            robotAngle);
+
+    // Calculate module setpoints
+    ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(robotRelativeSpeeds, 0.02);
+    SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
+    SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, SwerveConstants.kSpeedAt12Volts);
+
+    // Log unoptimized setpoints and setpoint speeds
+    Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
+    Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
+
+    // Send setpoints to modules
+    for (int i = 0; i < 4; i++) {
+      modules[i].runSetpoint(setpointStates[i]);
+    }
+
+    // Log optimized setpoints (runSetpoint mutates each state)
+    Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
+  }
+
   /** Runs the drive in a straight line with the specified drive output. */
   public void runCharacterization(double output) {
     for (int i = 0; i < 4; i++) {
@@ -449,13 +479,10 @@ public class Drive extends SubsystemBase {
     int closestFaceIndex = -1; // Index of the closest face
 
     // Loop over all face poses
-    for (int i = 0; i < FieldConstants.Reef.centerFaces.length; i++) {
-      Pose2d face = FieldConstants.Reef.centerFaces[i];
+    for (int i = 0; i < AprilTagConstants.TAGS.length; i++) {
+      Pose2d face = AprilTagConstants.TAGS[i];
       double distance =
           face.getTranslation().getDistance(getPose().getTranslation()); // Calculate distance
-
-      System.out.println("Face at: " + face + ", Distance: " + distance);
-
       // Update if the current face is closer
       if (distance < minDistance) {
         minDistance = distance;
@@ -578,7 +605,7 @@ public class Drive extends SubsystemBase {
                 + thetaController.calculate(pose.getRotation().getRadians(), sample.heading));
 
     // Apply the generated speeds
-    runVelocity(speeds);
+    runRelativeVelocity(speeds);
   }
   /*public Command followTrajectory(String trajectoryName) {
       // Create a new autonomous routine
@@ -608,7 +635,7 @@ public class Drive extends SubsystemBase {
   }
 
   public Command alignToReef(int index) {
-    Pose2d targetFace = FieldConstants.Reef.centerFaces[closestFace()];
+    Pose2d targetFace = AprilTagConstants.TAGS[closestFace()];
     Pose2d offsetPose = getOffsetPose(targetFace, index);
 
     return new InstantCommand(() -> setState(DriveState.ALIGNING_TO_REEF))

@@ -92,12 +92,16 @@ public class RobotContainer {
         climber = new Climber(new ClimberIOReal());
         endEffector = new EndEffector(new EndEffectorIOReal());
         autoFactory =
-            new AutoFactory(drive::getPose, drive::setPose, drive::followTrajectory, true, drive);
+            new AutoFactory(drive::getPose, drive::setPose, drive::followTrajectory, false, drive);
         autoChooser = new AutoChooser();
 
-        autoChooser.addRoutine("Basic Left", this::BasicLeft);
-        autoChooser.addRoutine("Basic Middle", this::BasicMiddle);
-        autoChooser.addRoutine("Basic Right", this::BasicRight);
+        autoChooser.addRoutine("Blue Left", this::BasicLeft);
+        autoChooser.addRoutine("Blue Middle", this::BasicMiddle);
+        autoChooser.addRoutine("Blue Right", this::BasicRight);
+        autoChooser.addRoutine("Red Left", this::RedLeft);
+        autoChooser.addRoutine("Red Middle", this::RedMiddle);
+        autoChooser.addRoutine("Red Right", this::RedRight);
+        autoChooser.addRoutine("Contingency", this::Contingency);
         SmartDashboard.putData("AutoChooser", autoChooser);
         RobotModeTriggers.autonomous().whileTrue(autoChooser.selectedCommandScheduler());
         break;
@@ -333,5 +337,118 @@ public class RobotContainer {
     // scoreTraj.done().onTrue(scoringSubsystem.score());
 
     return basic_right;
+  }
+
+  private AutoRoutine RedLeft() {
+    AutoRoutine basic_left = autoFactory.newRoutine("Red Left");
+    AutoTrajectory moveOut = basic_left.trajectory("red_left");
+    // AutoTrajectory moveReturn = basic_left.trajectory("basic_left_return");
+
+    // When the routine begins, reset odometry and start the first trajectory
+    basic_left.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
+
+    // Starting at the event marker named "intake", run the intake
+    // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
+    moveOut
+        .done()
+        .onTrue(
+            endEffector
+                .RotateCoralPlacement()
+                .alongWith(endEffector.setShooter(EndEffectorConstants.PlacementSpeed)));
+
+    // When the trajectory is done, start the next trajectory
+    // moveOut.done().onTrue(moveAgain.cmd());
+
+    // While the trajectory is active, prepare the scoring subsystem
+    // scoreTraj.active().whileTrue(scoringSubsystem.getReady());
+
+    // When the trajectory is done, score
+    // scoreTraj.done().onTrue(scoringSubsystem.score());
+
+    return basic_left;
+  }
+
+  private AutoRoutine RedMiddle() {
+    AutoRoutine basic_middle = autoFactory.newRoutine("Basic Middle");
+    AutoTrajectory moveOut = basic_middle.trajectory("red_middle");
+    // AutoTrajectory moveReturn = basic_middle.trajectory("basic_middle_return"); // basic left
+    // leave
+
+    // When the routine begins, reset odometry and start the first trajectory
+    basic_middle.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
+
+    // Starting at the event marker named "intake", run the intake
+    // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
+    moveOut
+        .done()
+        .onTrue(
+            endEffector
+                .RotateCoralPlacement()
+                .alongWith(endEffector.setShooter(EndEffectorConstants.PlacementSpeed)));
+    // When the trajectory is done, start the next trajectory
+    // moveOut.done().onTrue(moveAgain.cmd());
+
+    // While the trajectory is active, prepare the scoring subsystem
+    // scoreTraj.active().whileTrue(scoringSubsystem.getReady());
+
+    // When the trajectory is done, score
+    // scoreTraj.done().onTrue(scoringSubsystem.score());
+
+    return basic_middle;
+  }
+
+  private AutoRoutine RedRight() {
+    AutoRoutine basic_right = autoFactory.newRoutine("Basic Right");
+    AutoTrajectory moveOut = basic_right.trajectory("red_right");
+    //  AutoTrajectory moveReturn = basic_right.trajectory("basic_left_leave"); // basic left leave
+
+    // When the routine begins, reset odometry and start the first trajectory
+    basic_right.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
+
+    // Starting at the event marker named "intake", run the intake
+    // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
+    moveOut
+        .done()
+        .onTrue(
+            endEffector
+                .RotateCoralPlacement()
+                .alongWith(endEffector.setShooter(EndEffectorConstants.PlacementSpeed)));
+    // When the trajectory is done, start the next trajectory
+    // moveOut.done().onTrue(moveAgain.cmd());
+
+    // While the trajectory is active, prepare the scoring subsystem
+    // scoreTraj.active().whileTrue(scoringSubsystem.getReady());
+
+    // When the trajectory is done, score
+    // scoreTraj.done().onTrue(scoringSubsystem.score());
+
+    return basic_right;
+  }
+
+  private AutoRoutine Contingency() {
+    AutoRoutine contingency = autoFactory.newRoutine("Contingency");
+    AutoTrajectory moveOut = contingency.trajectory("test");
+    //  AutoTrajectory moveReturn = basic_right.trajectory("basic_left_leave"); // basic left leave
+
+    // When the routine begins, reset odometry and start the first trajectory
+    contingency.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
+
+    // Starting at the event marker named "intake", run the intake
+    // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
+    /*  moveOut
+    .done()
+    .onTrue(
+        endEffector
+            .RotateCoralPlacement()
+            .alongWith(endEffector.setShooter(EndEffectorConstants.PlacementSpeed)));*/
+    // moveOut.done().onTrue(moveAgain.cmd());
+
+    // While the trajectory is active, prepare the scoring subsystem
+    // scoreTraj.active().whileTrue(scoringSubsystem.getReady());
+
+    // When the trajectory is done, score
+    // scoreTraj.done().onTrue(scoringSubsystem.score());
+
+    return contingency;
   }
 }
