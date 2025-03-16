@@ -62,6 +62,7 @@ import frc.robot.subsystems.drive.imu.GyroIOInputsAutoLogged;
 import frc.robot.subsystems.drive.module.Module;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.leds.Leds;
+import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.util.FieldPoseUtils;
 import frc.robot.util.MyAlliance;
 import java.util.Arrays;
@@ -429,7 +430,7 @@ public class Drive extends SubsystemBase {
     };
   }
 
-  // My new code!---------------------------------------------------
+  // My new code!--------------------------------------------------- shush cluz
 
   public ChassisSpeeds calculatePIDVelocity(Pose2d targetPose) {
     return calculatePIDVelocity(targetPose, getPose(), 0, 0, 0);
@@ -472,6 +473,10 @@ public class Drive extends SubsystemBase {
 
   public double distanceFromPoint(Translation2d point) {
     return getPose().getTranslation().getDistance(point);
+  }
+
+  public InstantCommand offCam(VisionIOPhotonVision vision) {
+    return new InstantCommand(() -> vision.useCamera = false);
   }
 
   public int closestFace() {

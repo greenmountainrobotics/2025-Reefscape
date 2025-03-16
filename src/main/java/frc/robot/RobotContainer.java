@@ -143,6 +143,17 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
+
+  /*private void restartRoboToCam(){
+      vision =
+      new Vision(
+          drive::addVisionMeasurement,
+          new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, Pose2d())
+          //    ,new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose)
+
+          );
+  }*/
+
   private void configureButtonBindings() {
 
     // Default command, normal field-relative drive
@@ -206,6 +217,8 @@ public class RobotContainer {
     controller2.rightBumper().whileTrue((drive.alignToReef(2)));
 
     controller1.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    controller1.b().onTrue(drive.offCam(new VisionIOPhotonVision(camera0Name, robotToCamera0)));
+    // controller1.b().onTrue(Commands.runOnce());
 
     // Elevator
     // Ground Intake
@@ -369,7 +382,7 @@ public class RobotContainer {
   }
 
   private AutoRoutine RedMiddle() {
-    AutoRoutine basic_middle = autoFactory.newRoutine("Basic Middle");
+    AutoRoutine basic_middle = autoFactory.newRoutine("Red Middle");
     AutoTrajectory moveOut = basic_middle.trajectory("red_middle");
     // AutoTrajectory moveReturn = basic_middle.trajectory("basic_middle_return"); // basic left
     // leave
@@ -398,7 +411,7 @@ public class RobotContainer {
   }
 
   private AutoRoutine RedRight() {
-    AutoRoutine basic_right = autoFactory.newRoutine("Basic Right");
+    AutoRoutine basic_right = autoFactory.newRoutine("red right");
     AutoTrajectory moveOut = basic_right.trajectory("red_right");
     //  AutoTrajectory moveReturn = basic_right.trajectory("basic_left_leave"); // basic left leave
 

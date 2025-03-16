@@ -18,6 +18,7 @@ import static frc.robot.constants.VisionConstants.*;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,6 +29,7 @@ import org.photonvision.PhotonCamera;
 public class VisionIOPhotonVision implements VisionIO {
   protected final PhotonCamera camera;
   protected final Transform3d robotToCamera;
+  public boolean useCamera;
 
   /**
    * Creates a new VisionIOPhotonVision.
@@ -42,7 +44,12 @@ public class VisionIOPhotonVision implements VisionIO {
 
   @Override
   public void updateInputs(VisionIOInputs inputs) {
-    inputs.connected = camera.isConnected();
+
+    if (useCamera) {
+      inputs.connected = camera.isConnected();
+    }
+
+    SmartDashboard.putBoolean("useCamera?", useCamera);
 
     // Read new camera observations
     Set<Short> tagIds = new HashSet<>();
