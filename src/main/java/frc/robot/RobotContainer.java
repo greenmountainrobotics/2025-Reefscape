@@ -92,7 +92,7 @@ public class RobotContainer {
         climber = new Climber(new ClimberIOReal());
         endEffector = new EndEffector(new EndEffectorIOReal());
         autoFactory =
-            new AutoFactory(drive::getPose, drive::setPose, drive::followTrajectory, false, drive);
+            new AutoFactory(drive::getPose, drive::setPose, drive::followTrajectory, true, drive);
         autoChooser = new AutoChooser();
 
         autoChooser.addRoutine("Blue Left", this::BasicLeft);

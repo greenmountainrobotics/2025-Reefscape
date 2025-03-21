@@ -63,8 +63,6 @@ import frc.robot.subsystems.drive.module.Module;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.leds.Leds;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
-import frc.robot.util.FieldPoseUtils;
-import frc.robot.util.MyAlliance;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -181,6 +179,15 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void periodic() {
+
+    Pose2d targetFace = AprilTagConstants.TAGS[closestFace()];
+    Pose2d offsetPose = getOffsetPose(targetFace, 1);
+    Pose2d offsetPose2 = getOffsetPose(targetFace, 2);
+
+    Logger.recordOutput("Drive/pose1", offsetPose);
+    Logger.recordOutput("Drive/pose2", offsetPose2);
+
+    Logger.recordOutput("Drive/closestFaceIndex", closestFace());
 
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
@@ -505,10 +512,10 @@ public class Drive extends SubsystemBase {
 
   public static Pose2d getOffsetPose(Pose2d tagPose, double x, double y, int direction) {
     if (direction == 2) {
-      x = -x; // Flip x if direction is 2
+      y = -y; // Flip x if direction is 2
     }
 
-    Rotation2d rotation = tagPose.getRotation();
+    Rotation2d rotation = new Rotation2d(tagPose.getRotation().getRadians() + Math.PI);
     double angle = rotation.getRadians();
 
     // Compute offsets using rotation
@@ -640,54 +647,18 @@ public class Drive extends SubsystemBase {
   }
 
   public Command alignToReef(int index) {
-    Pose2d targetFace = AprilTagConstants.TAGS[closestFace()];
-    Pose2d offsetPose = getOffsetPose(targetFace, index);
-
     return new InstantCommand(() -> setState(DriveState.ALIGNING_TO_REEF))
         .andThen(
-            new DeferredCommand(
+            runToPose(
                 () -> {
-                  var angle =
-                      angleModulus(
-                          getPose()
-                              .getTranslation()
-                              .minus(
-                                  FieldPoseUtils.flipTranslationIfRed(offsetPose.getTranslation()))
-                              .getAngle()
-                              .getRadians());
+                  Pose2d targetFace = AprilTagConstants.TAGS[closestFace()]; // Evaluate at runtime
+                  Pose2d offsetPose = getOffsetPose(targetFace, index); // Evaluate at runtime
 
-                  var targetTranslation =
-                      FieldPoseUtils.flipTranslationIfRed(offsetPose.getTranslation())
-                          .plus(
-                              new Translation2d(
-                                      SmartDashboard.getNumber(
-                                          "Reef Distance M", DriveConstants.ReefPlacingDistance),
-                                      0)
-                                  .rotateBy(
-                                      Rotation2d.fromRadians(
-                                          MyAlliance.isRed()
-                                              ? angle > Math.PI * 5 / 6
-                                                  ? angle
-                                                  : angle < Math.PI * -5 / 6
-                                                      ? angle
-                                                      : angle < 0
-                                                          ? Math.PI * -5 / 6
-                                                          : Math.PI * 5 / 6
-                                              : Math.min(
-                                                  Math.max(angle, -Math.PI / 6), Math.PI / 6))));
+                  Logger.recordOutput("Auto/TargetFace", targetFace);
+                  Logger.recordOutput("Auto/OffsetPose", offsetPose);
 
-                  var targetPose =
-                      new Pose2d(
-                          targetTranslation.getX(),
-                          targetTranslation.getY(),
-                          FieldPoseUtils.flipTranslationIfRed(targetFace.getTranslation())
-                              .minus((Translation2d) targetTranslation)
-                              .getAngle()
-                              .minus(Rotation2d.fromRadians(Math.PI)));
-
-                  return runToPose(() -> targetPose);
-                },
-                Set.of(this)))
+                  return offsetPose; // Pass the latest computed pose
+                }))
         .finallyDo(() -> setState(DriveState.NONE));
   }
 
