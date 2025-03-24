@@ -43,4 +43,23 @@ public class AprilTagConstants {
         new Translation2d(193.10 * 0.0254, 130.17 * 0.0254),
         new Rotation2d(Math.toRadians(300))) // id22
   };
+
+  //1, 2, 12, 13
+  public static final Pose2d[] CORALPICKUPTAGS = {
+    new Pose2d(
+        new Translation2d(657.37 * 0.0254, 25.80 * 0.0254),
+        new Rotation2d(Math.toRadians(126))), // id1
+
+    new Pose2d(
+        new Translation2d(657.37 * 0.0254, 291.20 * 0.0254),
+        new Rotation2d(Math.toRadians(234))), // id2
+
+    new Pose2d(
+        new Translation2d(33.51 * 0.0254, 25.80 * 0.0254),
+        new Rotation2d(Math.toRadians(54))), // id12
+
+    new Pose2d(
+        new Translation2d(33.51 * 0.0254, 291.20 * 0.0254),
+        new Rotation2d(Math.toRadians(306))) // id13
+  };
 }

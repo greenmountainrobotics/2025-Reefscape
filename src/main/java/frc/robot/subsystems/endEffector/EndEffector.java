@@ -195,6 +195,14 @@ public class EndEffector extends SubsystemBase {
     return new InstantCommand(() -> setIntakeSpeed(speed));
   }
 
+  public Command setShooterTimed(double speed, double seconds) {
+    return new SequentialCommandGroup(
+        new InstantCommand(() -> setIntakeSpeed(speed)), // Start shooter
+        new WaitCommand(seconds), // Wait for 2 seconds
+        new InstantCommand(() -> setIntakeSpeed(0)) // Stop shooter
+    );
+}
+
   public Command RotateCoralPickup() {
     return new InstantCommand(
         () -> {

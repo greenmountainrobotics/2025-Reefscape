@@ -24,6 +24,7 @@ import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -181,14 +182,29 @@ public class Drive extends SubsystemBase {
   @Override
   public void periodic() {
 
-    Pose2d targetFace = AprilTagConstants.TAGS[closestFace()];
+    Pose2d targetFace = AprilTagConstants.TAGS[closestFace(AprilTagConstants.TAGS)];
     Pose2d offsetPose = getOffsetPose(targetFace, 1);
     Pose2d offsetPose2 = getOffsetPose(targetFace, 2);
 
-    Logger.recordOutput("Drive/pose1", offsetPose);
-    Logger.recordOutput("Drive/pose2", offsetPose2);
+    Logger.recordOutput("Drive/pose1Reef", offsetPose);
+    Logger.recordOutput("Drive/pose2Reef", offsetPose2);
 
-    Logger.recordOutput("Drive/closestFaceIndex", closestFace());
+    Logger.recordOutput("Drive/closestFaceIndex", closestFace(AprilTagConstants.TAGS));
+
+
+    //Coral pickup
+    Pose2d pickupTargetFace = AprilTagConstants.TAGS[closestFace(AprilTagConstants.TAGS)];
+    Pose2d pickupOffsetPose = getOffsetPose(pickupTargetFace, DriveConstants.CoralStationX, DriveConstants.CoralStationY, 1);
+    Pose2d pickupOffsetPose2 = getOffsetPose(pickupTargetFace, DriveConstants.CoralStationX, DriveConstants.CoralStationY,2);
+
+    Logger.recordOutput("Drive/pose1Pickup", pickupOffsetPose);
+    Logger.recordOutput("Drive/pose2Pickup", pickupOffsetPose2);
+
+    Logger.recordOutput("Drive/closestFaceIndexPickup", closestFace(AprilTagConstants.CORALPICKUPTAGS));
+
+
+
+
 
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
@@ -487,13 +503,13 @@ public class Drive extends SubsystemBase {
     return new InstantCommand(() -> vision.useCamera = false);
   }
 
-  public int closestFace() {
+  public int closestFace(Pose2d[] tags) {
     double minDistance = Double.MAX_VALUE; // Use max value to start with
     int closestFaceIndex = -1; // Index of the closest face
 
     // Loop over all face poses
-    for (int i = 0; i < AprilTagConstants.TAGS.length; i++) {
-      Pose2d face = AprilTagConstants.TAGS[i];
+    for (int i = 0; i < tags.length; i++) {
+      Pose2d face = tags[i];
       double distance =
           face.getTranslation().getDistance(getPose().getTranslation()); // Calculate distance
       // Update if the current face is closer
@@ -664,93 +680,33 @@ public class Drive extends SubsystemBase {
         .andThen(
             runToPose(
                 () -> {
-                  Pose2d targetFace = AprilTagConstants.TAGS[closestFace()]; // Evaluate at runtime
-                  Pose2d offsetPose = getOffsetPose(targetFace, index); // Evaluate at runtime
+                  Pose2d targetFace = AprilTagConstants.TAGS[closestFace(AprilTagConstants.TAGS)]; // Evaluate at runtime
+                  Pose2d offsetPose = getOffsetPose(targetFace, DriveConstants.CoralStationX, DriveConstants.CoralStationY, index); // Evaluate at runtime
 
-                  Logger.recordOutput("Auto/TargetFace", targetFace);
-                  Logger.recordOutput("Auto/OffsetPose", offsetPose);
+                  Logger.recordOutput("Auto/ReefTargetFace", targetFace);
+                  Logger.recordOutput("Auto/ReefOffsetPose", offsetPose);
 
                   return offsetPose; // Pass the latest computed pose
                 }))
         .finallyDo(() -> setState(DriveState.NONE));
   }
 
-  /*public Command alignToNote(Translation2d noteTranslation) {
-    return new DeferredCommand(
-        () -> {
-          var targetTranslation =
-              MyAlliance.isRed()
-                  ? noteTranslation.plus(
-                      new Translation2d(
-                              DriveConstants.WidthWithBumpersX / 2
-                                  + FieldConstants.NoteDiameter / 2,
-                              0)
-                          .rotateBy(getPose().getTranslation().minus(noteTranslation).getAngle()))
-                  : noteTranslation.minus(
-                      new Translation2d(
-                              DriveConstants.WidthWithBumpersX / 2
-                                  + FieldConstants.NoteDiameter / 2,
-                              0)
-                          .rotateBy(getPose().getTranslation().minus(noteTranslation).getAngle()));
-
-          var targetPose =
-              new Pose2d(
-                  targetTranslation.getX(),
-                  targetTranslation.getY(),
-                  noteTranslation.minus(targetTranslation).getAngle());
-
-          var startingPose = getPose();
-
-          return runToPose(
-                  () ->
-                      new Pose2d(
-                          startingPose.getX(), startingPose.getY(), targetPose.getRotation()),
-                  false)
-              .until(
-                  () ->
-                      Math.abs(targetPose.getRotation().minus(getPose().getRotation()).getRadians())
-                          < Math.PI / 6)
-              .andThen(runToPose(() -> targetPose));
-        },
-        Set.of(this));
-  }*/
-  /*
-  public Command alignToAmp() {
-    return new InstantCommand(() -> setState(DriveState.ALIGNING_TO_AMP))
+  
+  public Command alignToCoralStation(int index) {
+    return new InstantCommand(() -> setState(DriveState.ALIGNING_TO_INTAKE))
         .andThen(
             runToPose(
-                () ->
-                    FieldPoseUtils.flipPoseIfRed(
-                        new Pose2d(
-                            FieldConstants.AmpCenter.minus(
-                                new Translation2d(DriveConstants.WidthWithBumpersX, 0)
-                                    .times(0.5)
-                                    .rotateBy(Rotation2d.fromDegrees(90))),
-                            FieldConstants.AmpRotation)),
-                true,
-                KpTranslation * 4,
-                KpTheta))
-        .finallyDo(() -> setState(DriveState.NONE));
-  }*/
-  /*
-  public Command alignToFrontOfAmp() {
-    return new InstantCommand(() -> setState(DriveState.ALIGNING_TO_AMP))
-        .andThen(
-            runToPose(
-                () ->
-                    FieldPoseUtils.flipPoseIfRed(
-                        new Pose2d(
-                            FieldConstants.AmpCenter.minus(
-                                new Translation2d(DriveConstants.WidthWithBumpersX, 0)
-                                    .times(0.5)
-                                    .plus(
-                                        new Translation2d(
-                                            DriveConstants.WidthWithBumpersX * 2 / 3, 0))
-                                    .rotateBy(Rotation2d.fromDegrees(90))),
-                            FieldConstants.AmpRotation))))
+                () -> {
+                  Pose2d targetFace = AprilTagConstants.CORALPICKUPTAGS[closestFace(AprilTagConstants.CORALPICKUPTAGS)]; // Evaluate at runtime
+                  Pose2d offsetPose = getOffsetPose(targetFace, index); // Evaluate at runtime
+
+                  Logger.recordOutput("Auto/PickupTargetFace", targetFace);
+                  Logger.recordOutput("Auto/PickupOffsetPose", offsetPose);
+
+                  return offsetPose; // Pass the latest computed pose
+                }))
         .finallyDo(() -> setState(DriveState.NONE));
   }
-        */
 
   public void setState(DriveState state) {
     driveState = state;

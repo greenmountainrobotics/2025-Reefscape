@@ -95,7 +95,7 @@ public class RobotContainer {
             new AutoFactory(drive::getPose, drive::setPose, drive::followTrajectory, true, drive);
         autoChooser = new AutoChooser();
 
-        autoChooser.addRoutine("Basic Left", this::BasicLeft);
+        autoChooser.addRoutine("Basic Main", this::BasicLeft);
         autoChooser.addRoutine("Basic Middle", this::BasicMiddle);
         autoChooser.addRoutine("Basic Right", this::BasicRight);
         SmartDashboard.putData("AutoChooser", autoChooser);
@@ -186,10 +186,10 @@ public class RobotContainer {
         .onFalse(endEffector.setShooter(0));
 
     // Climber Climb
-    controller2.povLeft().whileTrue(climber.setSpeed(1.0)).onFalse(climber.setSpeed(0));
+    controller1.povLeft().whileTrue(climber.setSpeed(1.0)).onFalse(climber.setSpeed(0));
 
     // Climber UnClimb
-    controller2.povRight().whileTrue(climber.setSpeed(-0.5)).onFalse(climber.setSpeed(0));
+    controller1.povRight().whileTrue(climber.setSpeed(-0.5)).onFalse(climber.setSpeed(0));
 
     // Level One Elevator
     controller2.a().onTrue(elevator.goToLevelOne().andThen(endEffector.RotateTroftPlacement()));
@@ -207,13 +207,22 @@ public class RobotContainer {
     controller2
         .povUp()
         .onTrue(elevator.goToLevelFour().andThen(endEffector.RotateBargePlacement()));
+    
 
+    //Reef 1
     controller2.leftBumper().whileTrue((drive.alignToReef(1)));
 
+    //Reef 2
     controller2.rightBumper().whileTrue((drive.alignToReef(2)));
 
+    //Coral Station 1
+    controller2.povLeft().whileTrue((drive.alignToCoralStation(1)));
+
+    //Coral Station 2
+    controller2.povRight().whileTrue((drive.alignToCoralStation(2)));
+
     controller1.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-    controller1.b().onTrue(drive.offCam(new VisionIOPhotonVision(camera0Name, robotToCamera0)));
+   // controller1.b().onTrue(drive.offCam(new VisionIOPhotonVision(camera0Name, robotToCamera0)));
     // controller1.b().onTrue(Commands.runOnce());
 
     // Elevator
@@ -270,13 +279,12 @@ public class RobotContainer {
         .onTrue(
             drive
                 .alignToReef(1)
-                .andThen(elevator.goToLevelThree()) // Move elevator
-                .andThen(
-                    Commands.waitUntil(elevator::atTargetPosition)) // Wait for it to reach position
-                .andThen(endEffector.RotateCoralPlacement()) // Then rotate
-                .andThen(
-                    () ->
-                        endEffector.setShooter(EndEffectorConstants.PlacementSpeed)) // Set shooter
+                .andThen(elevator.goToLevelThree())
+                .alongWith(endEffector.RotateCoralPlacement())
+                .andThen(Commands.waitUntil(elevator::atTargetPosition)) // Wait for it to reach position
+                .andThen(endEffector.setShooterTimed(EndEffectorConstants.PlacementSpeed, 2))
+                .andThen(endEffector.RotateCoralPickup())
+                .alongWith(elevator.goToGroundLevel())
             );
 
     return basic_left;
