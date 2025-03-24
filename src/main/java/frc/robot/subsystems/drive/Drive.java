@@ -64,6 +64,7 @@ import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.leds.Leds;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -616,9 +617,21 @@ public class Drive extends SubsystemBase {
             sample.omega
                 + thetaController.calculate(pose.getRotation().getRadians(), sample.heading));
 
+    // Check alliance color
+    Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
+    boolean isRedAlliance = alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red;
+
+    // If red alliance, rotate speeds by 180 degrees
+    if (isRedAlliance) {
+      speeds =
+          new ChassisSpeeds(
+              -speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, -speeds.omegaRadiansPerSecond);
+    }
+
     // Apply the generated speeds
     runRelativeVelocity(speeds);
   }
+
   /*public Command followTrajectory(String trajectoryName) {
       // Create a new autonomous routine
       AutoRoutine routine = autoFactory.newRoutine("FollowPathRoutine");

@@ -40,6 +40,8 @@ public class Elevator extends SubsystemBase {
     Logger.recordOutput(
         "Elevator/positionInches", inputs.leftPositionRots * MOTOR_ROTATIONS_PER_INCH);
 
+    Logger.recordOutput("Elevator/atTargetPosition", atTargetPosition());
+
     Logger.recordOutput("Elevator/leftPositionRots", inputs.leftPositionRots);
     Logger.recordOutput("Elevator/leftVelocityRadsPerSec", inputs.leftVelocityRadsPerSec);
     Logger.recordOutput("Elevator/leftAppliedVoltage", inputs.leftAppliedVoltage);
@@ -76,6 +78,10 @@ public class Elevator extends SubsystemBase {
                         + gravityVolts))
             * ElevatorConstants.elevatorSpeed);
     //  io.runVoltage(0);
+  }
+
+  public boolean atTargetPosition() {
+    return Math.abs(inputs.leftPositionRots - (targetPositionInches)) < 1;
   }
 
   public void setPosition(double pos) {

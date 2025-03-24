@@ -95,13 +95,9 @@ public class RobotContainer {
             new AutoFactory(drive::getPose, drive::setPose, drive::followTrajectory, true, drive);
         autoChooser = new AutoChooser();
 
-        autoChooser.addRoutine("Blue Left", this::BasicLeft);
-        autoChooser.addRoutine("Blue Middle", this::BasicMiddle);
-        autoChooser.addRoutine("Blue Right", this::BasicRight);
-        autoChooser.addRoutine("Red Left", this::RedLeft);
-        autoChooser.addRoutine("Red Middle", this::RedMiddle);
-        autoChooser.addRoutine("Red Right", this::RedRight);
-        autoChooser.addRoutine("Contingency", this::Contingency);
+        autoChooser.addRoutine("Basic Left", this::BasicLeft);
+        autoChooser.addRoutine("Basic Middle", this::BasicMiddle);
+        autoChooser.addRoutine("Basic Right", this::BasicRight);
         SmartDashboard.putData("AutoChooser", autoChooser);
         RobotModeTriggers.autonomous().whileTrue(autoChooser.selectedCommandScheduler());
         break;
@@ -268,29 +264,20 @@ public class RobotContainer {
   // AUTO--------------------------------------------------------------------------------------------------------------------------
   private AutoRoutine BasicLeft() {
     AutoRoutine basic_left = autoFactory.newRoutine("Basic Left");
-    AutoTrajectory moveOut = basic_left.trajectory("basic_left_start");
-    // AutoTrajectory moveReturn = basic_left.trajectory("basic_left_return");
 
-    // When the routine begins, reset odometry and start the first trajectory
-    basic_left.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
-
-    // Starting at the event marker named "intake", run the intake
-    // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
-    moveOut
-        .done()
+    basic_left
+        .active()
         .onTrue(
-            endEffector
-                .RotateCoralPlacement()
-                .alongWith(endEffector.setShooter(EndEffectorConstants.PlacementSpeed)));
-
-    // When the trajectory is done, start the next trajectory
-    // moveOut.done().onTrue(moveAgain.cmd());
-
-    // While the trajectory is active, prepare the scoring subsystem
-    // scoreTraj.active().whileTrue(scoringSubsystem.getReady());
-
-    // When the trajectory is done, score
-    // scoreTraj.done().onTrue(scoringSubsystem.score());
+            drive
+                .alignToReef(1)
+                .andThen(elevator.goToLevelThree()) // Move elevator
+                .andThen(
+                    Commands.waitUntil(elevator::atTargetPosition)) // Wait for it to reach position
+                .andThen(endEffector.RotateCoralPlacement()) // Then rotate
+                .andThen(
+                    () ->
+                        endEffector.setShooter(EndEffectorConstants.PlacementSpeed)) // Set shooter
+            );
 
     return basic_left;
   }
@@ -440,7 +427,7 @@ public class RobotContainer {
 
   private AutoRoutine Contingency() {
     AutoRoutine contingency = autoFactory.newRoutine("Contingency");
-    AutoTrajectory moveOut = contingency.trajectory("test");
+    AutoTrajectory moveOut = contingency.trajectory("testing-new");
     //  AutoTrajectory moveReturn = basic_right.trajectory("basic_left_leave"); // basic left leave
 
     // When the routine begins, reset odometry and start the first trajectory

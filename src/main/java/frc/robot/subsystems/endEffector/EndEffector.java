@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.constants.ElevatorConstants;
 import frc.robot.constants.EndEffectorConstants;
 import frc.robot.constants.TunableConstants;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -94,7 +93,7 @@ public class EndEffector extends SubsystemBase {
                 -1.0,
                 Math.min(
                     1.0,
-                    (ElevatorConstants.voltageMultiplier
+                    (EndEffectorConstants.voltageMultiplier
                         * articulationPID.calculate(
                             adjustedPos, articulationSetpoint.getDegrees()))))
             * TunableConstants.KpEndEffectorSpeed;

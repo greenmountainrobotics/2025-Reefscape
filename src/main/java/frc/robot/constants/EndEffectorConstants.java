@@ -21,6 +21,9 @@ public class EndEffectorConstants {
   public static final double ArticulationToleranceRad = Math.toRadians(20);
 
   public static final double ArticulationVelocity = 0;
+
+  public static final double voltageMultiplier = 0.5;
+
   public static final double ArticulationAcceleration = 0;
 
   public static final double IntakeSpeed = 1.0;

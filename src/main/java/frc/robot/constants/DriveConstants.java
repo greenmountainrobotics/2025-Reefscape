@@ -5,8 +5,8 @@ import static edu.wpi.first.math.util.Units.inchesToMeters;
 public final class DriveConstants {
 
   // Reef aliggnment constants
-  public static final double ReefOffsetX = 6.5 * 0.0254; // 6.5 inches
-  public static final double ReefOffsetY = 20 * 0.0254; // 20Inches
+  public static final double ReefOffsetY = 7 * 0.0254; // 6.5 inches
+  public static final double ReefOffsetX = -21 * 0.0254; // 20Inches
 
   public static final double TrackWidthY = inchesToMeters(23.750);
   public static final double TrackWidthX = inchesToMeters(23.750);
