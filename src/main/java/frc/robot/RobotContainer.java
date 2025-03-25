@@ -80,10 +80,10 @@ public class RobotContainer {
                 new ModuleIOTalonFX(SwerveConstants.BackRight));
         vision =
             new Vision(
-                drive::addVisionMeasurement, new VisionIOPhotonVision(camera0Name, robotToCamera0)
-                /* ,new VisionIOPhotonVision(
-                    Camera.FrontRightCamera.name, Camera.BackCamera.robotToCam),
-                new VisionIOPhotonVision(
+                drive::addVisionMeasurement, 
+                new VisionIOPhotonVision(camera0Name, robotToCamera0),
+                new VisionIOPhotonVision(camera1Name, robotToCamera1)
+                /*ew VisionIOPhotonVision(
                     Camera.FrontLeftCamera.name, Camera.BackCamera.robotToCam)*/
 
                 );
