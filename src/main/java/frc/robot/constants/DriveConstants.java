@@ -8,8 +8,8 @@ public final class DriveConstants {
   public static final double ReefOffsetY = 7 * 0.0254; // 6.5 inches
   public static final double ReefOffsetX = -21 * 0.0254; // 20Inches
 
-  public static final double CoralStationY = 7 * 0.0254; // 6.5 inches along the face
-  public static final double CoralStationX = -21 * 0.0254; // 20Inches away from the face
+  public static final double CoralStationY = 9 * 0.0254; // 6.5 inches along the face
+  public static final double CoralStationX = -15 * 0.0254; // 20Inches away from the face
 
   public static final double TrackWidthY = inchesToMeters(23.750);
   public static final double TrackWidthX = inchesToMeters(23.750);
@@ -28,7 +28,7 @@ public final class DriveConstants {
   public static final double BackLeftEncoderOffset = 0.019; // 2.477
   public static final double BackRightEncoderOffset = -0.029; // -0.933
 
-  public static final double DriveTolerance = 0.025;
+  public static final double DriveTolerance = 0.075;
   public static final double ThetaToleranceRad = 0.03;
 
   public static final int kPigeonId = 13;

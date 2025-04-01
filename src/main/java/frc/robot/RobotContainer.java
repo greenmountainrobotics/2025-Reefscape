@@ -80,11 +80,11 @@ public class RobotContainer {
                 new ModuleIOTalonFX(SwerveConstants.BackRight));
         vision =
             new Vision(
-                drive::addVisionMeasurement, 
+                drive::addVisionMeasurement,
                 new VisionIOPhotonVision(camera0Name, robotToCamera0),
                 new VisionIOPhotonVision(camera1Name, robotToCamera1)
                 /*ew VisionIOPhotonVision(
-                    Camera.FrontLeftCamera.name, Camera.BackCamera.robotToCam)*/
+                Camera.FrontLeftCamera.name, Camera.BackCamera.robotToCam)*/
 
                 );
         elevator = new Elevator(new ElevatorIOKraken());
@@ -95,9 +95,11 @@ public class RobotContainer {
             new AutoFactory(drive::getPose, drive::setPose, drive::followTrajectory, true, drive);
         autoChooser = new AutoChooser();
 
-        autoChooser.addRoutine("Basic Main", this::BasicLeft);
-        autoChooser.addRoutine("Basic Middle", this::BasicMiddle);
-        autoChooser.addRoutine("Basic Right", this::BasicRight);
+        autoChooser.addRoutine("L3 MAIN ONE!!! ", this::L3Main);
+        autoChooser.addRoutine("L2 MAIN ONE!!!", this::L2Main);
+        autoChooser.addRoutine("L2 Knock Off", this::L2Knock);
+        autoChooser.addRoutine("L2 Cycle", this::L2Cycle);
+
         SmartDashboard.putData("AutoChooser", autoChooser);
         RobotModeTriggers.autonomous().whileTrue(autoChooser.selectedCommandScheduler());
         break;
@@ -207,22 +209,21 @@ public class RobotContainer {
     controller2
         .povUp()
         .onTrue(elevator.goToLevelFour().andThen(endEffector.RotateBargePlacement()));
-    
 
-    //Reef 1
+    // Reef 1
     controller2.leftBumper().whileTrue((drive.alignToReef(1)));
 
-    //Reef 2
+    // Reef 2
     controller2.rightBumper().whileTrue((drive.alignToReef(2)));
 
-    //Coral Station 1
+    // Coral Station 1
     controller2.povLeft().whileTrue((drive.alignToCoralStation(1)));
 
-    //Coral Station 2
+    // Coral Station 2
     controller2.povRight().whileTrue((drive.alignToCoralStation(2)));
 
     controller1.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-   // controller1.b().onTrue(drive.offCam(new VisionIOPhotonVision(camera0Name, robotToCamera0)));
+    // controller1.b().onTrue(drive.offCam(new VisionIOPhotonVision(camera0Name, robotToCamera0)));
     // controller1.b().onTrue(Commands.runOnce());
 
     // Elevator
@@ -271,138 +272,80 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   // AUTO--------------------------------------------------------------------------------------------------------------------------
-  private AutoRoutine BasicLeft() {
-    AutoRoutine basic_left = autoFactory.newRoutine("Basic Left");
+  private AutoRoutine L3Main() {
+    AutoRoutine routine = autoFactory.newRoutine("L3 Main");
 
-    basic_left
+    routine
         .active()
         .onTrue(
             drive
                 .alignToReef(1)
                 .andThen(elevator.goToLevelThree())
-                .alongWith(endEffector.RotateCoralPlacement())
-                .andThen(Commands.waitUntil(elevator::atTargetPosition)) // Wait for it to reach position
+                .andThen(endEffector.RotateCoralPlacement())
+                .andThen(Commands.waitUntil(elevator::atTargetPosition))
+                .andThen(endEffector.setShooterTimed(EndEffectorConstants.PlacementSpeed, 1))
+                .andThen(endEffector.RotateCoralPickup())
+                .andThen(elevator.goToGroundLevel()));
+
+    return routine;
+  }
+
+  private AutoRoutine L2Main() {
+    AutoRoutine routine = autoFactory.newRoutine("L2 Main");
+    routine
+        .active()
+        .onTrue(
+            drive
+                .alignToReef(1)
+                .andThen(elevator.goToLevelTwo())
+                .andThen(endEffector.RotateCoralPlacement())
+                .andThen(Commands.waitUntil(elevator::atTargetPosition))
+                .andThen(endEffector.setShooterTimed(EndEffectorConstants.PlacementSpeed, 1))
+                .andThen(endEffector.RotateCoralPickup())
+                .andThen(elevator.goToGroundLevel()));
+
+    return routine;
+  }
+
+  private AutoRoutine L2Knock() {
+    AutoRoutine routine = autoFactory.newRoutine("L2 Knock Off");
+    routine
+        .active()
+        .onTrue(
+            drive
+                .alignToReef(1)
+                .andThen(elevator.goToLevelTwo())
+                .andThen(endEffector.RotateCoralPlacement())
+                .andThen(Commands.waitUntil(elevator::atTargetPosition))
+                .andThen(endEffector.setShooterTimed(EndEffectorConstants.PlacementSpeed, 1))
+                .andThen(elevator.goToLevelThree())
                 .andThen(endEffector.setShooterTimed(EndEffectorConstants.PlacementSpeed, 2))
                 .andThen(endEffector.RotateCoralPickup())
-                .alongWith(elevator.goToGroundLevel())
-            );
+                .andThen(elevator.goToGroundLevel()));
 
-    return basic_left;
+    return routine;
   }
 
-  private AutoRoutine BasicMiddle() {
-    AutoRoutine basic_middle = autoFactory.newRoutine("Basic Middle");
-    AutoTrajectory moveOut = basic_middle.trajectory("basic_middle_start");
-    // AutoTrajectory moveReturn = basic_middle.trajectory("basic_middle_return"); // basic left
-    // leave
-
-    // When the routine begins, reset odometry and start the first trajectory
-    basic_middle.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
-
-    // Starting at the event marker named "intake", run the intake
-    // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
-    moveOut
-        .done()
+  private AutoRoutine L2Cycle() {
+    AutoRoutine routine = autoFactory.newRoutine("L2 Cycle");
+    routine
+        .active()
         .onTrue(
-            endEffector
-                .RotateCoralPlacement()
-                .alongWith(endEffector.setShooter(EndEffectorConstants.PlacementSpeed)));
-    // When the trajectory is done, start the next trajectory
-    // moveOut.done().onTrue(moveAgain.cmd());
+            drive
+                .alignToReef(1)
+                .andThen(elevator.goToLevelTwo())
+                .andThen(endEffector.RotateCoralPlacement())
+                .andThen(Commands.waitUntil(elevator::atTargetPosition))
+                .andThen(endEffector.setShooterTimed(EndEffectorConstants.PlacementSpeed, 1))
+                .andThen(drive.alignToReef(3))
+                .andThen(elevator.goToLevelThree())
+                .andThen(endEffector.setShooterTimed(EndEffectorConstants.PlacementSpeed, 1.5))
+                .andThen(endEffector.RotateCoralPickup())
+                .andThen(elevator.goToCoralPickup())
+                .andThen(drive.alignToCoralStation(1))
+                .andThen(endEffector.setShooterTimed(EndEffectorConstants.IntakeSpeed, 5)));
 
-    // While the trajectory is active, prepare the scoring subsystem
-    // scoreTraj.active().whileTrue(scoringSubsystem.getReady());
-
-    // When the trajectory is done, score
-    // scoreTraj.done().onTrue(scoringSubsystem.score());
-
-    return basic_middle;
-  }
-
-  private AutoRoutine BasicRight() {
-    AutoRoutine basic_right = autoFactory.newRoutine("Basic Right");
-    AutoTrajectory moveOut = basic_right.trajectory("basic_right_start");
-    //  AutoTrajectory moveReturn = basic_right.trajectory("basic_left_leave"); // basic left leave
-
-    // When the routine begins, reset odometry and start the first trajectory
-    basic_right.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
-
-    // Starting at the event marker named "intake", run the intake
-    // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
-    moveOut
-        .done()
-        .onTrue(
-            endEffector
-                .RotateCoralPlacement()
-                .alongWith(endEffector.setShooter(EndEffectorConstants.PlacementSpeed)));
-    // When the trajectory is done, start the next trajectory
-    // moveOut.done().onTrue(moveAgain.cmd());
-
-    // While the trajectory is active, prepare the scoring subsystem
-    // scoreTraj.active().whileTrue(scoringSubsystem.getReady());
-
-    // When the trajectory is done, score
-    // scoreTraj.done().onTrue(scoringSubsystem.score());
-
-    return basic_right;
-  }
-
-  private AutoRoutine RedLeft() {
-    AutoRoutine basic_left = autoFactory.newRoutine("Red Left");
-    AutoTrajectory moveOut = basic_left.trajectory("red_left");
-    // AutoTrajectory moveReturn = basic_left.trajectory("basic_left_return");
-
-    // When the routine begins, reset odometry and start the first trajectory
-    basic_left.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
-
-    // Starting at the event marker named "intake", run the intake
-    // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
-    moveOut
-        .done()
-        .onTrue(
-            endEffector
-                .RotateCoralPlacement()
-                .alongWith(endEffector.setShooter(EndEffectorConstants.PlacementSpeed)));
-
-    // When the trajectory is done, start the next trajectory
-    // moveOut.done().onTrue(moveAgain.cmd());
-
-    // While the trajectory is active, prepare the scoring subsystem
-    // scoreTraj.active().whileTrue(scoringSubsystem.getReady());
-
-    // When the trajectory is done, score
-    // scoreTraj.done().onTrue(scoringSubsystem.score());
-
-    return basic_left;
-  }
-
-  private AutoRoutine RedMiddle() {
-    AutoRoutine basic_middle = autoFactory.newRoutine("Red Middle");
-    AutoTrajectory moveOut = basic_middle.trajectory("red_middle");
-    // AutoTrajectory moveReturn = basic_middle.trajectory("basic_middle_return"); // basic left
-    // leave
-
-    // When the routine begins, reset odometry and start the first trajectory
-    basic_middle.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
-
-    // Starting at the event marker named "intake", run the intake
-    // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
-    moveOut
-        .done()
-        .onTrue(
-            endEffector
-                .RotateCoralPlacement()
-                .alongWith(endEffector.setShooter(EndEffectorConstants.PlacementSpeed)));
-    // When the trajectory is done, start the next trajectory
-    // moveOut.done().onTrue(moveAgain.cmd());
-
-    // While the trajectory is active, prepare the scoring subsystem
-    // scoreTraj.active().whileTrue(scoringSubsystem.getReady());
-
-    // When the trajectory is done, score
-    // scoreTraj.done().onTrue(scoringSubsystem.score());
-
-    return basic_middle;
+    return routine;
   }
 
   private AutoRoutine RedRight() {

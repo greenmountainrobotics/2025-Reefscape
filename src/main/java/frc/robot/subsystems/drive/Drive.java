@@ -24,7 +24,6 @@ import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
-import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -191,20 +190,21 @@ public class Drive extends SubsystemBase {
 
     Logger.recordOutput("Drive/closestFaceIndex", closestFace(AprilTagConstants.TAGS));
 
-
-    //Coral pickup
-    Pose2d pickupTargetFace = AprilTagConstants.TAGS[closestFace(AprilTagConstants.TAGS)];
-    Pose2d pickupOffsetPose = getOffsetPose(pickupTargetFace, DriveConstants.CoralStationX, DriveConstants.CoralStationY, 1);
-    Pose2d pickupOffsetPose2 = getOffsetPose(pickupTargetFace, DriveConstants.CoralStationX, DriveConstants.CoralStationY,2);
+    // Coral pickup
+    Pose2d pickupTargetFace =
+        AprilTagConstants.CORALPICKUPTAGS[closestFace(AprilTagConstants.CORALPICKUPTAGS)];
+    Pose2d pickupOffsetPose =
+        getOffsetPose(
+            pickupTargetFace, DriveConstants.CoralStationX, DriveConstants.CoralStationY, 1);
+    Pose2d pickupOffsetPose2 =
+        getOffsetPose(
+            pickupTargetFace, DriveConstants.CoralStationX, DriveConstants.CoralStationY, 2);
 
     Logger.recordOutput("Drive/pose1Pickup", pickupOffsetPose);
     Logger.recordOutput("Drive/pose2Pickup", pickupOffsetPose2);
 
-    Logger.recordOutput("Drive/closestFaceIndexPickup", closestFace(AprilTagConstants.CORALPICKUPTAGS));
-
-
-
-
+    Logger.recordOutput(
+        "Drive/closestFaceIndexPickup", closestFace(AprilTagConstants.CORALPICKUPTAGS));
 
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
@@ -528,7 +528,9 @@ public class Drive extends SubsystemBase {
   }
 
   public static Pose2d getOffsetPose(Pose2d tagPose, double x, double y, int direction) {
-    if (direction == 2) {
+    if (direction == 3) {
+      y = 0;
+    } else if (direction == 2) {
       y = -y; // Flip x if direction is 2
     }
 
@@ -680,8 +682,11 @@ public class Drive extends SubsystemBase {
         .andThen(
             runToPose(
                 () -> {
-                  Pose2d targetFace = AprilTagConstants.TAGS[closestFace(AprilTagConstants.TAGS)]; // Evaluate at runtime
-                  Pose2d offsetPose = getOffsetPose(targetFace, DriveConstants.CoralStationX, DriveConstants.CoralStationY, index); // Evaluate at runtime
+                  Pose2d targetFace =
+                      AprilTagConstants.TAGS[
+                          closestFace(AprilTagConstants.TAGS)]; // Evaluate at runtime
+
+                  Pose2d offsetPose = getOffsetPose(targetFace, index); // Evaluate at runtime
 
                   Logger.recordOutput("Auto/ReefTargetFace", targetFace);
                   Logger.recordOutput("Auto/ReefOffsetPose", offsetPose);
@@ -691,14 +696,20 @@ public class Drive extends SubsystemBase {
         .finallyDo(() -> setState(DriveState.NONE));
   }
 
-  
   public Command alignToCoralStation(int index) {
     return new InstantCommand(() -> setState(DriveState.ALIGNING_TO_INTAKE))
         .andThen(
             runToPose(
                 () -> {
-                  Pose2d targetFace = AprilTagConstants.CORALPICKUPTAGS[closestFace(AprilTagConstants.CORALPICKUPTAGS)]; // Evaluate at runtime
-                  Pose2d offsetPose = getOffsetPose(targetFace, index); // Evaluate at runtime
+                  Pose2d targetFace =
+                      AprilTagConstants.CORALPICKUPTAGS[
+                          closestFace(AprilTagConstants.CORALPICKUPTAGS)]; // Evaluate at runtime
+                  Pose2d offsetPose =
+                      getOffsetPose(
+                          targetFace,
+                          DriveConstants.CoralStationX,
+                          DriveConstants.CoralStationY,
+                          index); // Evaluate at runtime
 
                   Logger.recordOutput("Auto/PickupTargetFace", targetFace);
                   Logger.recordOutput("Auto/PickupOffsetPose", offsetPose);
