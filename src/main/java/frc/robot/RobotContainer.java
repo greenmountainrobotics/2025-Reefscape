@@ -19,7 +19,6 @@ import static frc.robot.constants.VisionConstants.*;
 import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
-import choreo.auto.AutoTrajectory;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -97,7 +96,9 @@ public class RobotContainer {
 
         autoChooser.addRoutine("L3 MAIN ONE!!! ", this::L3Main);
         autoChooser.addRoutine("L2 MAIN ONE!!!", this::L2Main);
-        autoChooser.addRoutine("L2 Knock Off", this::L2Knock);
+        autoChooser.addRoutine("L4 Cycle", this::L4Cycle);
+        autoChooser.addRoutine("L4 MAIN ONE!!!", this::L4Main);
+
         autoChooser.addRoutine("L2 Cycle", this::L2Cycle);
 
         SmartDashboard.putData("AutoChooser", autoChooser);
@@ -158,9 +159,9 @@ public class RobotContainer {
     drive.setDefaultCommand(
         joystickDrive(
             drive,
-            () -> -controller1.getLeftY(),
-            () -> -controller1.getLeftX(),
-            () -> -controller1.getRightX()));
+            () -> -controller1.getLeftY() * elevator.getDriveWeight(),
+            () -> -controller1.getLeftX() * elevator.getDriveWeight(),
+            () -> -controller1.getRightX() * elevator.getDriveWeight()));
 
     /*   climber.setDefaultCommand(
     new RunCommand(
@@ -188,23 +189,195 @@ public class RobotContainer {
         .onFalse(endEffector.setShooter(0));
 
     // Climber Climb
-    controller1.povLeft().whileTrue(climber.setSpeed(1.0)).onFalse(climber.setSpeed(0));
+    controller1.leftTrigger().whileTrue(climber.setSpeed(1.0)).onFalse(climber.setSpeed(0));
 
     // Climber UnClimb
-    controller1.povRight().whileTrue(climber.setSpeed(-0.5)).onFalse(climber.setSpeed(0));
+    controller1.rightTrigger().whileTrue(climber.setSpeed(-1.0)).onFalse(climber.setSpeed(0));
 
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------
     // Level One Elevator
-    controller2.a().onTrue(elevator.goToLevelOne().andThen(endEffector.RotateTroftPlacement()));
-    //    // Level Two Elevator
+    controller2.a().onTrue(elevator.goToGroundLevel().andThen(endEffector.RotateCoralPickup()));
+
+    // Level One Elevator auto align left
+    controller2
+        .a()
+        .and(controller2.leftBumper())
+        .whileTrue(
+            elevator
+                .goToGroundLevel()
+                .alongWith(endEffector.RotateCoralPickup())
+                .alongWith(drive.alignToReef(1))
+                .andThen(Commands.waitUntil(elevator::atTargetPosition))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.PlacementTime))
+                .andThen(endEffector.RotateCoralPickup())
+                .andThen(elevator.goToCoralPickup()));
+
+    // Level One Elevator auto align right
+    controller2
+        .a()
+        .and(controller2.rightBumper())
+        .whileTrue(
+            elevator
+                .goToGroundLevel()
+                .alongWith(endEffector.RotateCoralPickup())
+                .alongWith(drive.alignToReef(2))
+                .andThen(Commands.waitUntil(elevator::atTargetPosition))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.PlacementTime))
+                .andThen(endEffector.RotateCoralPickup())
+                .andThen(elevator.goToCoralPickup()));
+
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------
+    // Level Two Elevator
     controller2.x().onTrue(elevator.goToLevelTwo().andThen(endEffector.RotateCoralPlacement()));
+
+    // Level two Elevator auto align left
+    controller2
+        .x()
+        .and(controller2.leftBumper())
+        .whileTrue(
+            elevator
+                .goToLevelTwo()
+                .alongWith(endEffector.RotateCoralPlacement())
+                .alongWith(drive.alignToReef(1))
+                .andThen(Commands.waitUntil(elevator::atTargetPosition))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.PlacementTime))
+                .andThen(endEffector.RotateCoralPickup())
+                .andThen(elevator.goToCoralPickup()));
+
+    // Level two Elevator auto align right
+    controller2
+        .x()
+        .and(controller2.rightBumper())
+        .whileTrue(
+            elevator
+                .goToLevelTwo()
+                .alongWith(endEffector.RotateCoralPlacement())
+                .alongWith(drive.alignToReef(2))
+                .andThen(Commands.waitUntil(elevator::atTargetPosition))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.PlacementTime))
+                .andThen(endEffector.RotateCoralPickup())
+                .andThen(elevator.goToCoralPickup()));
+
+    // Level two Elevator algae
+    controller2
+        .x()
+        .and(controller2.povDown())
+        .whileTrue(
+            drive
+                .alignToReef(3)
+                .alongWith(Commands.waitUntil(drive::atTargetPositionL3))
+                .andThen(elevator.goToLevelTwo())
+                .alongWith(endEffector.RotateCoralPlacement())
+                .andThen(Commands.waitUntil(elevator::atTargetPosition))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.KnockTime))
+                .andThen(endEffector.RotateCoralPickup())
+                .andThen(elevator.goToCoralPickup()));
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------
     // Level Three Elevator
     controller2.b().onTrue(elevator.goToLevelThree().andThen(endEffector.RotateCoralPlacement()));
+
+    // Level three Elevator auto align left
+    controller2
+        .b()
+        .and(controller2.leftBumper())
+        .whileTrue(
+            drive
+                .alignToReef(1)
+                .alongWith(Commands.waitUntil(drive::atTargetPositionL3))
+                .andThen(elevator.goToLevelThree())
+                .alongWith(endEffector.RotateCoralPlacement())
+                .andThen(Commands.waitUntil(elevator::atTargetPosition))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.PlacementTime))
+                .andThen(endEffector.RotateCoralPickup())
+                .andThen(elevator.goToCoralPickup()));
+
+    // Level three Elevator auto align right
+    controller2
+        .b()
+        .and(controller2.rightBumper())
+        .whileTrue(
+            drive
+                .alignToReef(2)
+                .alongWith(Commands.waitUntil(drive::atTargetPositionL3))
+                .andThen(elevator.goToLevelThree())
+                .alongWith(endEffector.RotateCoralPlacement())
+                .andThen(Commands.waitUntil(elevator::atTargetPosition))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.PlacementTime))
+                .andThen(endEffector.RotateCoralPickup())
+                .andThen(elevator.goToCoralPickup()));
+
+    // Level three Elevator algae
+    controller2
+        .b()
+        .and(controller2.povDown())
+        .whileTrue(
+            drive
+                .alignToReef(3)
+                .alongWith(Commands.waitUntil(drive::atTargetPositionL3))
+                .andThen(elevator.goToLevelThree())
+                .alongWith(endEffector.RotateCoralPlacement())
+                .andThen(Commands.waitUntil(elevator::atTargetPosition))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.KnockTime))
+                .andThen(endEffector.RotateCoralPickup())
+                .andThen(elevator.goToCoralPickup()));
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------
     // Level Four Elevator
     controller2.y().onTrue(elevator.goToLevelFour().andThen(endEffector.RotateCoralL4Placement()));
-    // Ground Level
+
+    // Level four Elevator auto align left
     controller2
-        .povDown()
-        .onTrue(elevator.goToGroundLevel().andThen(endEffector.RotateCoralPickup()));
+        .y()
+        .and(controller2.leftBumper())
+        .whileTrue(
+            drive
+                .alignToReefStart(1)
+                .alongWith(elevator.goToLevelFour())
+                .alongWith(endEffector.RotateCoralPlacement())
+                .andThen(Commands.waitUntil(elevator::atTargetPositionL4))
+                .andThen(drive.alignToReefL4(1))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.PlacementTime))
+                .andThen(endEffector.RotateCoralPickup())
+                .andThen(elevator.goToCoralPickup()));
+
+    // Level four Elevator auto align right
+    controller2
+        .y()
+        .and(controller2.rightBumper())
+        .whileTrue(
+            drive
+                .alignToReefStart(2)
+                .alongWith(elevator.goToLevelFour())
+                .alongWith(endEffector.RotateCoralPlacement())
+                .andThen(Commands.waitUntil(elevator::atTargetPositionL4))
+                .andThen(drive.alignToReefL4(2))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.PlacementTime))
+                .andThen(endEffector.RotateCoralPickup())
+                .andThen(elevator.goToCoralPickup()));
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------
+
+    // Ground Level
+    controller2.povDown().whileTrue(drive.alignToReef(3));
+
     // Barge
     controller2
         .povUp()
@@ -217,10 +390,36 @@ public class RobotContainer {
     controller2.rightBumper().whileTrue((drive.alignToReef(2)));
 
     // Coral Station 1
-    controller2.povLeft().whileTrue((drive.alignToCoralStation(1)));
+    controller2
+        .povLeft()
+        .whileTrue(
+            (drive
+                .alignToCoralStation(1)
+                .alongWith(
+                    elevator
+                        .goToCoralPickup()
+                        .alongWith(
+                            endEffector
+                                .RotateCoralPickup()
+                                .alongWith(
+                                    endEffector.setShooter(EndEffectorConstants.IntakeSpeed))))))
+        .onFalse(endEffector.setShooter(0));
 
     // Coral Station 2
-    controller2.povRight().whileTrue((drive.alignToCoralStation(2)));
+    controller2
+        .povRight()
+        .whileTrue(
+            (drive
+                .alignToCoralStation(2)
+                .alongWith(
+                    elevator
+                        .goToCoralPickup()
+                        .alongWith(
+                            endEffector
+                                .RotateCoralPickup()
+                                .alongWith(
+                                    endEffector.setShooter(EndEffectorConstants.IntakeSpeed))))))
+        .onFalse(endEffector.setShooter(0));
 
     controller1.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
     // controller1.b().onTrue(drive.offCam(new VisionIOPhotonVision(camera0Name, robotToCamera0)));
@@ -280,12 +479,45 @@ public class RobotContainer {
         .onTrue(
             drive
                 .alignToReef(1)
-                .andThen(elevator.goToLevelThree())
-                .andThen(endEffector.RotateCoralPlacement())
+                .alongWith(elevator.goToLevelThree())
+                .alongWith(endEffector.RotateCoralPlacement())
                 .andThen(Commands.waitUntil(elevator::atTargetPosition))
-                .andThen(endEffector.setShooterTimed(EndEffectorConstants.PlacementSpeed, 1))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.PlacementTime))
+                .andThen(elevator.goToLevelTwo())
+                .andThen(drive.alignToReef(3))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.KnockTime))
                 .andThen(endEffector.RotateCoralPickup())
-                .andThen(elevator.goToGroundLevel()));
+                .andThen(elevator.goToCoralPickup()));
+
+    return routine;
+  }
+
+  private AutoRoutine L4Main() {
+    AutoRoutine routine = autoFactory.newRoutine("L4 Main");
+
+    routine
+        .active()
+        .onTrue(
+            drive
+                .alignToReefStart(1)
+                .alongWith(elevator.goToLevelFour())
+                .alongWith(endEffector.RotateCoralPlacement())
+                .andThen(Commands.waitUntil(elevator::atTargetPositionL4))
+                .andThen(drive.alignToReefL4(1))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.PlacementTime))
+                .andThen(elevator.goToLevelTwo())
+                .andThen(drive.alignToReef(3))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.KnockTime))
+                .andThen(endEffector.RotateCoralPickup())
+                .andThen(elevator.goToCoralPickup()));
 
     return routine;
   }
@@ -300,28 +532,16 @@ public class RobotContainer {
                 .andThen(elevator.goToLevelTwo())
                 .andThen(endEffector.RotateCoralPlacement())
                 .andThen(Commands.waitUntil(elevator::atTargetPosition))
-                .andThen(endEffector.setShooterTimed(EndEffectorConstants.PlacementSpeed, 1))
-                .andThen(endEffector.RotateCoralPickup())
-                .andThen(elevator.goToGroundLevel()));
-
-    return routine;
-  }
-
-  private AutoRoutine L2Knock() {
-    AutoRoutine routine = autoFactory.newRoutine("L2 Knock Off");
-    routine
-        .active()
-        .onTrue(
-            drive
-                .alignToReef(1)
-                .andThen(elevator.goToLevelTwo())
-                .andThen(endEffector.RotateCoralPlacement())
-                .andThen(Commands.waitUntil(elevator::atTargetPosition))
-                .andThen(endEffector.setShooterTimed(EndEffectorConstants.PlacementSpeed, 1))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.PlacementTime))
+                .andThen(drive.alignToReef(3))
                 .andThen(elevator.goToLevelThree())
-                .andThen(endEffector.setShooterTimed(EndEffectorConstants.PlacementSpeed, 2))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.KnockTime))
                 .andThen(endEffector.RotateCoralPickup())
-                .andThen(elevator.goToGroundLevel()));
+                .andThen(elevator.goToCoralPickup()));
 
     return routine;
   }
@@ -336,70 +556,77 @@ public class RobotContainer {
                 .andThen(elevator.goToLevelTwo())
                 .andThen(endEffector.RotateCoralPlacement())
                 .andThen(Commands.waitUntil(elevator::atTargetPosition))
-                .andThen(endEffector.setShooterTimed(EndEffectorConstants.PlacementSpeed, 1))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.PlacementTime))
                 .andThen(drive.alignToReef(3))
                 .andThen(elevator.goToLevelThree())
-                .andThen(endEffector.setShooterTimed(EndEffectorConstants.PlacementSpeed, 1.5))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.KnockTime))
                 .andThen(endEffector.RotateCoralPickup())
                 .andThen(elevator.goToCoralPickup())
                 .andThen(drive.alignToCoralStation(1))
-                .andThen(endEffector.setShooterTimed(EndEffectorConstants.IntakeSpeed, 5)));
-
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.IntakeSpeed, EndEffectorConstants.IntakeTime))
+                .andThen(drive.alignToReef(1))
+                .andThen(elevator.goToLevelThree())
+                .andThen(endEffector.RotateCoralPlacement())
+                .andThen(Commands.waitUntil(elevator::atTargetPosition))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.PlacementTime))
+                .andThen(elevator.goToLevelTwo())
+                .andThen(drive.alignToReef(3))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.KnockTime))
+                .andThen(endEffector.RotateCoralPickup())
+                .andThen(elevator.goToGroundLevel()));
     return routine;
   }
 
-  private AutoRoutine RedRight() {
-    AutoRoutine basic_right = autoFactory.newRoutine("red right");
-    AutoTrajectory moveOut = basic_right.trajectory("red_right");
-    //  AutoTrajectory moveReturn = basic_right.trajectory("basic_left_leave"); // basic left leave
-
-    // When the routine begins, reset odometry and start the first trajectory
-    basic_right.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
-
-    // Starting at the event marker named "intake", run the intake
-    // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
-    moveOut
-        .done()
+  private AutoRoutine L4Cycle() {
+    AutoRoutine routine = autoFactory.newRoutine("L4 Cycle");
+    routine
+        .active()
         .onTrue(
-            endEffector
-                .RotateCoralPlacement()
-                .alongWith(endEffector.setShooter(EndEffectorConstants.PlacementSpeed)));
-    // When the trajectory is done, start the next trajectory
-    // moveOut.done().onTrue(moveAgain.cmd());
-
-    // While the trajectory is active, prepare the scoring subsystem
-    // scoreTraj.active().whileTrue(scoringSubsystem.getReady());
-
-    // When the trajectory is done, score
-    // scoreTraj.done().onTrue(scoringSubsystem.score());
-
-    return basic_right;
-  }
-
-  private AutoRoutine Contingency() {
-    AutoRoutine contingency = autoFactory.newRoutine("Contingency");
-    AutoTrajectory moveOut = contingency.trajectory("testing-new");
-    //  AutoTrajectory moveReturn = basic_right.trajectory("basic_left_leave"); // basic left leave
-
-    // When the routine begins, reset odometry and start the first trajectory
-    contingency.active().onTrue(Commands.sequence(moveOut.resetOdometry(), moveOut.cmd()));
-
-    // Starting at the event marker named "intake", run the intake
-    // pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
-    /*  moveOut
-    .done()
-    .onTrue(
-        endEffector
-            .RotateCoralPlacement()
-            .alongWith(endEffector.setShooter(EndEffectorConstants.PlacementSpeed)));*/
-    // moveOut.done().onTrue(moveAgain.cmd());
-
-    // While the trajectory is active, prepare the scoring subsystem
-    // scoreTraj.active().whileTrue(scoringSubsystem.getReady());
-
-    // When the trajectory is done, score
-    // scoreTraj.done().onTrue(scoringSubsystem.score());
-
-    return contingency;
+            drive
+                .alignToReefStart(1)
+                .alongWith(elevator.goToLevelFour())
+                .alongWith(endEffector.RotateCoralPlacement())
+                .andThen(Commands.waitUntil(elevator::atTargetPositionL4))
+                .andThen(drive.alignToReefL4(1))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.PlacementTime))
+                .andThen(drive.alignToReef(3))
+                .andThen(elevator.goToLevelThree())
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.KnockTime))
+                .andThen(endEffector.RotateCoralPickup())
+                .andThen(elevator.goToCoralPickup())
+                .andThen(drive.alignToCoralStation(1))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.IntakeSpeed, EndEffectorConstants.IntakeTime))
+                .andThen(drive.alignToReefStart(1))
+                .alongWith(elevator.goToLevelFour())
+                .andThen(endEffector.RotateCoralPlacement())
+                .andThen(Commands.waitUntil(elevator::atTargetPositionL4))
+                .andThen(drive.alignToReefL4(1))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.PlacementTime))
+                .andThen(elevator.goToLevelTwo())
+                .andThen(drive.alignToReef(3))
+                .andThen(
+                    endEffector.setShooterTimed(
+                        EndEffectorConstants.PlacementSpeed, EndEffectorConstants.KnockTime))
+                .andThen(endEffector.RotateCoralPickup())
+                .andThen(elevator.goToGroundLevel()));
+    return routine;
   }
 }

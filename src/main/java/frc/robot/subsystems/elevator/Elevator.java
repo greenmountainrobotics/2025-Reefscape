@@ -12,6 +12,8 @@ public class Elevator extends SubsystemBase {
   private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
   private final ElevatorIO io;
   private final PIDController elevatorPID;
+
+  private double driveWeight = 1.0;
   private double gravityVolts = 0;
   public double targetPositionInches = 0;
 
@@ -81,11 +83,24 @@ public class Elevator extends SubsystemBase {
   }
 
   public boolean atTargetPosition() {
-    return Math.abs(inputs.leftPositionRots - (targetPositionInches)) < 1;
+    return Math.abs(inputs.leftPositionRots - (targetPositionInches)) < 0.5;
+  }
+
+  public boolean atTargetPositionL4() {
+    return Math.abs(inputs.leftPositionRots - (targetPositionInches)) < 0.3;
   }
 
   public void setPosition(double pos) {
     targetPositionInches = pos;
+    if (pos == levelFour) {
+      driveWeight = 0.5;
+    } else {
+      driveWeight = 1.0;
+    }
+  }
+
+  public double getDriveWeight() {
+    return driveWeight;
   }
 
   public InstantCommand goToLevelOne() {

@@ -33,10 +33,9 @@ public class VisionConstants {
       new Transform3d(
           (13.533 * 0.0254), 0, (6.455 * 0.0254), new Rotation3d(0.0, Math.toRadians(-20.0), 0.0));
   public static Transform3d robotToCamera1 =
-      new Transform3d(-0.162, 0.275, 0.948, new Rotation3d(0.0, Math.toRadians(-55), 0));
-
-  // Basic filtering thresholds
-  public static double maxAmbiguity = 0.1;
+      new Transform3d(0.155, 0.232, 0.867, new Rotation3d(0.0, Math.toRadians(45), 0));
+  // Basic filtering thresholds`
+  public static double maxAmbiguity = 0.075;
   public static double maxZError = 10.0; // should be 0.75
 
   // Standard deviation baselines, for 1 meter distance and 1 tag
@@ -49,7 +48,7 @@ public class VisionConstants {
   public static double[] cameraStdDevFactors =
       new double[] {
         1.0, // Camera 0
-        0.3 // Camera 1
+        1.0 // Camera 1
       };
 
   // Multipliers to apply for MegaTag 2 observations

@@ -20,6 +20,10 @@ public class EndEffectorConstants {
 
   public static final double ArticulationToleranceRad = Math.toRadians(20);
 
+  public static final double PlacementTime = 0.5;
+  public static final double KnockTime = 0.8;
+  public static final double IntakeTime = 3.0;
+
   public static final double ArticulationVelocity = 0;
 
   public static final double voltageMultiplier = 0.5;

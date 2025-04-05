@@ -74,6 +74,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
+  public Pose2d publicTargetPose = new Pose2d();
 
   // TunerConstants doesn't include these constants, so they are declared locally
   public static final double ODOMETRY_FREQUENCY =
@@ -168,7 +169,7 @@ public class Drive extends SubsystemBase {
                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
 
     translationController =
-        new ProfiledPIDController(KpTranslation, 0, 0, new TrapezoidProfile.Constraints(5, 5));
+        new ProfiledPIDController(KpTranslation, 0.01, 0, new TrapezoidProfile.Constraints(5, 5));
     translationController.setTolerance(DriveConstants.DriveTolerance);
     thetaController =
         new ProfiledPIDController(KpTheta, 0, KdTheta, new TrapezoidProfile.Constraints(5, 5));
@@ -187,6 +188,12 @@ public class Drive extends SubsystemBase {
 
     Logger.recordOutput("Drive/pose1Reef", offsetPose);
     Logger.recordOutput("Drive/pose2Reef", offsetPose2);
+    try {
+      Logger.recordOutput("Drive/atPos3", atTargetPositionL3());
+      Logger.recordOutput("Drive/atPos4", atTargetPositionL4());
+    } catch (Exception e) {
+
+    }
 
     Logger.recordOutput("Drive/closestFaceIndex", closestFace(AprilTagConstants.TAGS));
 
@@ -292,6 +299,16 @@ public class Drive extends SubsystemBase {
     Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
   }
 
+  public boolean atTargetPositionL3() {
+    return Math.abs(getPose().getTranslation().getDistance(publicTargetPose.getTranslation()))
+        < DriveConstants.L3Threshold;
+  }
+
+  public boolean atTargetPositionL4() {
+    return Math.abs(getPose().getTranslation().getDistance(publicTargetPose.getTranslation()))
+        < DriveConstants.L4Threshold;
+  }
+
   public void runRelativeVelocity(ChassisSpeeds speeds) {
     // Get current robot heading from odometry
     Rotation2d robotAngle = getPose().getRotation();
@@ -368,7 +385,6 @@ public class Drive extends SubsystemBase {
     }
     return states;
   }
-
   /** Returns the module positions (turn angles and drive positions) for all of the modules. */
   private SwerveModulePosition[] getModulePositions() {
     SwerveModulePosition[] states = new SwerveModulePosition[4];
@@ -530,6 +546,7 @@ public class Drive extends SubsystemBase {
   public static Pose2d getOffsetPose(Pose2d tagPose, double x, double y, int direction) {
     if (direction == 3) {
       y = 0;
+      x = DriveConstants.ReefRemoveOffsetX;
     } else if (direction == 2) {
       y = -y; // Flip x if direction is 2
     }
@@ -555,6 +572,7 @@ public class Drive extends SubsystemBase {
             new RunCommand(
                 () -> {
                   var targetPose = targetPoseSupplier.get();
+                  publicTargetPose = targetPose;
                   Logger.recordOutput("Auto/TargetPose", targetPose);
                   Logger.recordOutput("Auto/Trajectory", getPose(), targetPose);
                   runVelocity(calculatePIDVelocity(targetPose));
@@ -687,6 +705,54 @@ public class Drive extends SubsystemBase {
                           closestFace(AprilTagConstants.TAGS)]; // Evaluate at runtime
 
                   Pose2d offsetPose = getOffsetPose(targetFace, index); // Evaluate at runtime
+
+                  Logger.recordOutput("Auto/ReefTargetFace", targetFace);
+                  Logger.recordOutput("Auto/ReefOffsetPose", offsetPose);
+
+                  return offsetPose; // Pass the latest computed pose
+                }))
+        .finallyDo(() -> setState(DriveState.NONE));
+  }
+
+  public Command alignToReefL4(int index) {
+    return new InstantCommand(() -> setState(DriveState.ALIGNING_TO_REEF))
+        .andThen(
+            runToPose(
+                () -> {
+                  Pose2d targetFace =
+                      AprilTagConstants.TAGS[
+                          closestFace(AprilTagConstants.TAGS)]; // Evaluate at runtime
+
+                  Pose2d offsetPose =
+                      getOffsetPose(
+                          targetFace,
+                          DriveConstants.ReefOffsetL4X,
+                          DriveConstants.ReefOffsetL4Y,
+                          index); // Evaluate at runtime
+
+                  Logger.recordOutput("Auto/ReefTargetFace", targetFace);
+                  Logger.recordOutput("Auto/ReefOffsetPose", offsetPose);
+
+                  return offsetPose; // Pass the latest computed pose
+                }))
+        .finallyDo(() -> setState(DriveState.NONE));
+  }
+
+  public Command alignToReefStart(int index) {
+    return new InstantCommand(() -> setState(DriveState.ALIGNING_TO_REEF))
+        .andThen(
+            runToPose(
+                () -> {
+                  Pose2d targetFace =
+                      AprilTagConstants.TAGS[
+                          closestFace(AprilTagConstants.TAGS)]; // Evaluate at runtime
+
+                  Pose2d offsetPose =
+                      getOffsetPose(
+                          targetFace,
+                          DriveConstants.ReefOffsetL4XS1,
+                          DriveConstants.ReefOffsetL4Y,
+                          index); // Evaluate at runtime
 
                   Logger.recordOutput("Auto/ReefTargetFace", targetFace);
                   Logger.recordOutput("Auto/ReefOffsetPose", offsetPose);

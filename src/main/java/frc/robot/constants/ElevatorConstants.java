@@ -2,7 +2,7 @@ package frc.robot.constants;
 
 public final class ElevatorConstants {
 
-  public static final double elevatorSpeed = 4; // Out of 12
+  public static final double elevatorSpeed = 6; // Out of 12
   public static double currentLimitAmps = 40.0;
 
   public static final double KpElevator = 0.40;
@@ -22,7 +22,7 @@ public final class ElevatorConstants {
 
   public static final double levelOne = 7.5 - 1.1;
   public static final double levelTwo = 13.13 - 0.7;
-  public static final double levelThree = 19.40 - 0.7;
+  public static final double levelThree = 18.50;
   public static final double levelFour = 28.2;
   public static final double levelBarge = 28.2;
   public static final double levelPickup = 7.3;
